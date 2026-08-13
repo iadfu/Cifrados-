@@ -167,13 +167,25 @@
   :root[data-theme="dark"] .fab button, @media (prefers-color-scheme:dark){ .fab button{ color:#241705; } }
 
   .detail-header{
-    display:flex; align-items:flex-start; gap:10px; padding:16px 18px 8px; position:sticky; top:0;
+    display:flex; flex-direction:column; gap:10px; padding:16px 18px 10px; position:sticky; top:0;
     background:var(--bg); z-index:5; border-bottom:1px solid var(--border);
   }
+  .detail-header-top{ display:flex; align-items:flex-start; gap:10px; }
   .detail-titles{ flex:1; min-width:0; }
   .detail-titles h1{ font-family:var(--font-display); font-size:21px; font-weight:700; margin:2px 0 0; text-wrap:balance; }
   .detail-titles p{ margin:2px 0 0; color:var(--ink-soft); font-size:14px; }
-  .detail-actions{ display:flex; gap:4px; }
+  .detail-actions{ display:flex; gap:8px; overflow-x:auto; }
+  .action-pill{
+    display:inline-flex; align-items:center; gap:6px; flex:none;
+    padding:8px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--bg-elevated); color:var(--ink); font-size:13px; font-weight:700;
+    font-family:var(--font-body); white-space:nowrap;
+    transition:border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+  }
+  .action-pill:hover{ border-color:var(--accent); }
+  .action-pill:active{ transform:scale(0.96); }
+  .action-pill.is-danger{ color:var(--danger); }
+  .action-pill.is-live-active{ background:var(--accent-soft); border-color:var(--accent); color:var(--accent-ink); }
 
   .ref-link-wrap{ padding:12px 18px 0; }
   .ref-link{
@@ -224,6 +236,22 @@
   .chord-sheet.chords-flow .line{ white-space:pre-wrap; margin-bottom:8px; }
   .chord-sheet.chords-flow .line:last-child{ margin-bottom:0; }
   .chord{ color:var(--chord); font-weight:800; letter-spacing:0.02em; }
+
+  .pdf-backdrop{ position:fixed; inset:0; z-index:35; background:transparent; }
+  .pdf-backdrop[hidden]{ display:none; }
+  .pdf-dropdown{
+    position:fixed; background:var(--bg-elevated); border:1px solid var(--border); border-radius:14px;
+    box-shadow:var(--card-shadow-hover); padding:8px; display:flex; flex-direction:column; gap:2px;
+    min-width:230px; z-index:36;
+  }
+  .pdf-dropdown[hidden]{ display:none; }
+  .pdf-dropdown-item{
+    text-align:left; padding:11px 12px; border-radius:10px; border:none; background:transparent;
+    color:var(--ink); font-size:14px; font-weight:600; font-family:var(--font-body);
+    transition:background 0.12s ease;
+  }
+  .pdf-dropdown-item:hover{ background:var(--accent-soft); color:var(--accent-ink); }
+  .pdf-dropdown-item.is-primary{ color:var(--accent-ink); font-weight:700; }
 
   .modal-overlay{
     position:fixed; inset:0; background:rgba(0,0,0,0.5);
@@ -289,6 +317,8 @@
   .btn-primary{ background:var(--accent); border-color:var(--accent); color:#241705; box-shadow:0 3px 10px rgba(184,134,46,0.28); }
   .btn-primary:hover{ border-color:var(--accent); box-shadow:0 5px 14px rgba(184,134,46,0.34); }
   .btn-danger{ background:var(--danger-soft); border-color:transparent; color:var(--danger); flex:none; }
+  .btn-danger-solid{ background:var(--danger); border-color:var(--danger); color:#fff; }
+  .btn-danger-solid:hover{ border-color:var(--danger); box-shadow:0 3px 10px var(--danger-soft); }
 
   .sec-edit-row{
     border:1px solid var(--border); border-radius:14px; padding:12px;
@@ -375,12 +405,11 @@
   #cifrados-app.live-mode .sec-box-header span{ font-size:15px; }
   #cifrados-app.live-mode .chord-sheet{ font-size:max(22px, var(--sheet-size, 16px)) !important; line-height:1.9; }
   #cifrados-app.live-mode .sec-note{ font-size:14px; }
-  .icon-btn.is-live-active{ background:var(--accent-soft); color:var(--accent-ink); }
 
   .print-header{ display:none; }
   @media print{
     body, #cifrados-app{ background:#fff !important; }
-    .detail-header, .transpose-bar, .topbar, .fab, .toast, .modal-overlay, .ref-link-wrap{ display:none !important; }
+    .detail-header, .transpose-bar, .topbar, .fab, .toast, .modal-overlay, .pdf-dropdown, .pdf-backdrop, .ref-link-wrap{ display:none !important; }
     #cifrados-app{ max-width:none; color:#000; }
     .print-header{
       display:flex; justify-content:space-between; align-items:flex-end; gap:20px;
@@ -542,7 +571,7 @@
     if(!db || suppressPush) return;
     const cloudSongs = songs.map(s => ({
       id: s.id, titulo: s.titulo, artista: s.artista, tono: s.tono,
-      tempo: s.tempo || '', link: s.link || '', secciones: s.secciones, updatedAt: s.updatedAt
+      tempo: s.tempo || '', compas: s.compas || '', link: s.link || '', secciones: s.secciones, updatedAt: s.updatedAt
     }));
     db.collection('iglesia').doc('datos').set({ songs: cloudSongs, cultos, syncedAt: Date.now() })
       .catch(e => console.warn('No se pudo sincronizar con la nube', e));
@@ -605,6 +634,26 @@
 
   let state = { view:'inicio', currentId:null, query:'', liveView:false };
   let toastTimer = null;
+
+  function customConfirm(message, onConfirm){
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.innerHTML = `
+      <div class="modal-card">
+        <h2>Confirmar eliminación</h2>
+        <p>${escapeHtml(message)}</p>
+        <div class="form-actions">
+          <button class="btn" id="confirm-cancel">Cancelar</button>
+          <button class="btn btn-danger-solid" id="confirm-ok">Eliminar</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    const close = () => overlay.remove();
+    overlay.addEventListener('click', e => { if(e.target === overlay) close(); });
+    overlay.querySelector('#confirm-cancel').addEventListener('click', close);
+    overlay.querySelector('#confirm-ok').addEventListener('click', () => { close(); onConfirm(); });
+  }
 
   function showToast(msg){
     clearTimeout(toastTimer);
@@ -988,7 +1037,7 @@
                 <button class="song-card" data-open="${s.id}">
                   <div class="song-card-info">
                     <p class="song-card-title">${escapeHtml(s.titulo)}</p>
-                    <p class="song-card-artist">${escapeHtml(s.artista || 'Sin artista')}${s.tempo ? ' · ' + escapeHtml(s.tempo) + ' BPM' : ''}</p>
+                    <p class="song-card-artist">${escapeHtml(s.artista || 'Sin artista')}${s.tempo ? ' · ' + escapeHtml(s.tempo) + ' BPM' : ''}${s.compas ? ' · ' + escapeHtml(s.compas) : ''}</p>
                   </div>
                   <span class="tono-badge">${escapeHtml(transposeChordToken(s.tono || '-', s.transpose||0))}</span>
                 </button>
@@ -1020,16 +1069,18 @@
 
     app.innerHTML = `
       <div class="detail-header">
-        <button class="icon-btn" id="btn-back" aria-label="Volver">${ICONS.back}</button>
-        <div class="detail-titles">
-          <h1>${escapeHtml(song.titulo)}</h1>
-          <p>${escapeHtml(song.artista || 'Sin artista')}${song.tempo ? ' · ' + escapeHtml(song.tempo) + ' BPM' : ''}</p>
+        <div class="detail-header-top">
+          <button class="icon-btn" id="btn-back" aria-label="Volver">${ICONS.back}</button>
+          <div class="detail-titles">
+            <h1>${escapeHtml(song.titulo)}</h1>
+            <p>${escapeHtml(song.artista || 'Sin artista')}${song.tempo ? ' · ' + escapeHtml(song.tempo) + ' BPM' : ''}${song.compas ? ' · ' + escapeHtml(song.compas) : ''}</p>
+          </div>
         </div>
         <div class="detail-actions">
-          <button class="icon-btn ${state.liveView ? 'is-live-active' : ''}" id="btn-live" aria-label="Vista en vivo">${ICONS.live}</button>
-          <button class="icon-btn" id="btn-pdf" aria-label="Descargar PDF">${ICONS.pdf}</button>
-          ${isLider() ? `<button class="icon-btn" id="btn-edit" aria-label="Editar">${ICONS.edit}</button>` : ''}
-          ${isLider() ? `<button class="icon-btn" id="btn-delete" aria-label="Eliminar">${ICONS.trash}</button>` : ''}
+          <button class="action-pill ${state.liveView ? 'is-live-active' : ''}" id="btn-live">${ICONS.live}<span>Vista en vivo</span></button>
+          <button class="action-pill" id="btn-pdf">${ICONS.pdf}<span>PDF</span></button>
+          ${isLider() ? `<button class="action-pill" id="btn-edit">${ICONS.edit}<span>Editar</span></button>` : ''}
+          ${isLider() ? `<button class="action-pill is-danger" id="btn-delete">${ICONS.trash}<span>Eliminar</span></button>` : ''}
         </div>
       </div>
       ${song.link ? `
@@ -1047,6 +1098,7 @@
         <div class="print-meta">
           <div>Tono: <b>${escapeHtml(displayTono)}</b></div>
           ${song.tempo ? `<div>Tempo: <b>${escapeHtml(song.tempo)}</b></div>` : ''}
+          ${song.compas ? `<div>Compás: <b>${escapeHtml(song.compas)}</b></div>` : ''}
         </div>
       </div>
       <div class="sec-roadmap">
@@ -1073,25 +1125,32 @@
           <button id="btn-font-up" aria-label="Letra más grande">A+</button>
         </div>
       </div>
-      <div class="modal-overlay" id="pdf-modal" hidden>
-        <div class="modal-card">
-          <h2>Descargar PDF</h2>
-          <p>¿Qué versión quieres generar?</p>
-          <button class="btn" id="btn-pdf-letra">Clasificación + letra</button>
-          <button class="btn" id="btn-pdf-acordes">Clasificación + acordes</button>
-          <button class="btn btn-primary" id="btn-pdf-completo">Clasificación + acordes + letra</button>
-          <button class="btn" id="btn-pdf-cancel">Cancelar</button>
-        </div>
+      <div class="pdf-backdrop" id="pdf-backdrop" hidden></div>
+      <div class="pdf-dropdown" id="pdf-modal" hidden>
+        <button class="pdf-dropdown-item is-primary" id="btn-pdf-completo">Clasificación + acordes + letra</button>
+        <button class="pdf-dropdown-item" id="btn-pdf-letra">Clasificación + letra</button>
+        <button class="pdf-dropdown-item" id="btn-pdf-acordes">Clasificación + acordes</button>
       </div>
     `;
     app.classList.toggle('live-mode', state.liveView);
     app.querySelector('#btn-back').addEventListener('click', () => go('list'));
     app.querySelector('#btn-live').addEventListener('click', () => { state.liveView = !state.liveView; renderDetail(); });
-    app.querySelector('#btn-pdf').addEventListener('click', () => { app.querySelector('#pdf-modal').hidden = false; });
-    app.querySelector('#pdf-modal').addEventListener('click', (e) => { if(e.target.id === 'pdf-modal') app.querySelector('#pdf-modal').hidden = true; });
-    app.querySelector('#btn-pdf-cancel').addEventListener('click', () => { app.querySelector('#pdf-modal').hidden = true; });
+    const pdfBtn = app.querySelector('#btn-pdf');
+    const pdfMenu = app.querySelector('#pdf-modal');
+    const pdfBackdrop = app.querySelector('#pdf-backdrop');
+    function openPdfMenu(){
+      const r = pdfBtn.getBoundingClientRect();
+      const menuWidth = 240;
+      pdfMenu.style.top = (r.bottom + 6) + 'px';
+      pdfMenu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - menuWidth - 8)) + 'px';
+      pdfMenu.hidden = false;
+      pdfBackdrop.hidden = false;
+    }
+    function closePdfMenu(){ pdfMenu.hidden = true; pdfBackdrop.hidden = true; }
+    pdfBtn.addEventListener('click', openPdfMenu);
+    pdfBackdrop.addEventListener('click', closePdfMenu);
     function printWithMode(mode){
-      app.querySelector('#pdf-modal').hidden = true;
+      closePdfMenu();
       app.dataset.printMode = mode;
       document.title = song.titulo.replace(/[\\/:*?"<>|]/g, '-');
       window.print();
@@ -1102,11 +1161,11 @@
     if(isLider()){
       app.querySelector('#btn-edit').addEventListener('click', () => go('form', song.id));
       app.querySelector('#btn-delete').addEventListener('click', () => {
-        if(confirm('¿Eliminar "' + song.titulo + '"? Esta acción no se puede deshacer.')){
+        customConfirm('¿Eliminar "' + song.titulo + '"? Esta acción no se puede deshacer.', () => {
           songs = songs.filter(s => s.id !== song.id);
           saveSongs();
           go('list');
-        }
+        });
       });
     }
     app.querySelector('#btn-down').addEventListener('click', () => { song.transpose = (song.transpose||0) - 1; saveSongs(); renderDetail(); });
@@ -1206,6 +1265,12 @@
             <input id="f-tempo" type="text" value="${escapeHtml(editing ? (editing.tempo||'') : '')}" placeholder="Ej: 68" />
           </div>
         </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="f-compas">Compás</label>
+            <input id="f-compas" type="text" value="${escapeHtml(editing ? (editing.compas||'') : '')}" placeholder="Ej: 4/4" />
+          </div>
+        </div>
         <small style="margin-top:-10px; color:var(--ink-soft)">Tono: notación de acordes C D E F G A B, con m, 7, sus4, etc.</small>
         <div class="field">
           <label for="f-link">Link de referencia</label>
@@ -1232,11 +1297,11 @@
     });
     if(editing){
       app.querySelector('#btn-delete').addEventListener('click', () => {
-        if(confirm('¿Eliminar "' + editing.titulo + '"?')){
+        customConfirm('¿Eliminar "' + editing.titulo + '"? Esta acción no se puede deshacer.', () => {
           songs = songs.filter(s => s.id !== editing.id);
           saveSongs();
           go('list');
-        }
+        });
       });
     }
     app.querySelector('#btn-save').addEventListener('click', () => {
@@ -1244,16 +1309,17 @@
       const artista = app.querySelector('#f-artista').value.trim();
       const tono = app.querySelector('#f-tono').value.trim() || '-';
       const tempo = app.querySelector('#f-tempo').value.trim();
+      const compas = app.querySelector('#f-compas').value.trim();
       const link = app.querySelector('#f-link').value.trim();
       const secciones = formSecciones.map(s => ({ id: s.id, tipo: s.tipo, contenido: s.contenido, veces: s.veces || 1, nota: s.nota || '' }));
       if(!titulo){ showToast('Falta el título de la canción'); app.querySelector('#f-titulo').focus(); return; }
       if(editing){
-        editing.titulo = titulo; editing.artista = artista; editing.tono = tono; editing.tempo = tempo; editing.link = link; editing.secciones = secciones;
+        editing.titulo = titulo; editing.artista = artista; editing.tono = tono; editing.tempo = tempo; editing.compas = compas; editing.link = link; editing.secciones = secciones;
         editing.updatedAt = Date.now();
         saveSongs();
         go('detail', editing.id);
       } else {
-        const song = { id: uid(), titulo, artista, tono, tempo, link, secciones, transpose:0, fontScale:1, updatedAt: Date.now() };
+        const song = { id: uid(), titulo, artista, tono, tempo, compas, link, secciones, transpose:0, fontScale:1, updatedAt: Date.now() };
         songs.push(song);
         saveSongs();
         go('detail', song.id);
@@ -1440,11 +1506,11 @@
     if(isLider()){
       app.querySelector('#btn-edit-culto').addEventListener('click', () => go('culto-form', culto.id));
       app.querySelector('#btn-delete-culto').addEventListener('click', () => {
-        if(confirm('¿Eliminar este repertorio? Esta acción no se puede deshacer.')){
+        customConfirm('¿Eliminar este repertorio? Esta acción no se puede deshacer.', () => {
           cultos = cultos.filter(c => c.id !== culto.id);
           saveCultos();
           go('cultos');
-        }
+        });
       });
     }
   }
@@ -1566,11 +1632,11 @@
     app.querySelector('#picker-modal').addEventListener('click', (e) => { if(e.target.id === 'picker-modal') e.target.hidden = true; });
     if(editing){
       app.querySelector('#btn-delete-culto').addEventListener('click', () => {
-        if(confirm('¿Eliminar este repertorio? Esta acción no se puede deshacer.')){
+        customConfirm('¿Eliminar este repertorio? Esta acción no se puede deshacer.', () => {
           cultos = cultos.filter(c => c.id !== editing.id);
           saveCultos();
           go('cultos');
-        }
+        });
       });
     }
     app.querySelector('#btn-save-culto').addEventListener('click', () => {
