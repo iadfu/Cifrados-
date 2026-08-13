@@ -211,6 +211,10 @@
   .sec-box-header{ display:flex; align-items:center; gap:8px; padding:11px 16px; border-bottom:1px solid var(--border); }
   .sec-box-header .dot{ width:9px; height:9px; border-radius:50%; background:var(--dot); flex:none; }
   .sec-box-header span{ font-weight:700; font-size:12.5px; text-transform:uppercase; letter-spacing:0.05em; color:var(--ink); }
+  .sec-note{
+    margin:0; padding:8px 16px; font-size:12.5px; font-style:italic; color:var(--accent-ink);
+    background:var(--accent-soft); border-bottom:1px solid var(--border);
+  }
   .chord-sheet{
     font-family:var(--font-mono); white-space:pre; line-height:1.75;
     font-size:var(--sheet-size, 16px); tab-size:4;
@@ -360,6 +364,19 @@
     font-size:13.5px; z-index:20; box-shadow:0 6px 16px var(--shadow);
   }
 
+  #cifrados-app.live-mode .ref-link-wrap,
+  #cifrados-app.live-mode .sec-roadmap,
+  #cifrados-app.live-mode #btn-pdf,
+  #cifrados-app.live-mode #btn-edit,
+  #cifrados-app.live-mode #btn-delete{ display:none !important; }
+  #cifrados-app.live-mode #btn-live{ background:var(--accent-soft); color:var(--accent-ink); }
+  #cifrados-app.live-mode .chord-scroll{ flex-direction:column !important; gap:0 !important; }
+  #cifrados-app.live-mode .chord-col{ flex:none !important; }
+  #cifrados-app.live-mode .sec-box-header span{ font-size:15px; }
+  #cifrados-app.live-mode .chord-sheet{ font-size:max(22px, var(--sheet-size, 16px)) !important; line-height:1.9; }
+  #cifrados-app.live-mode .sec-note{ font-size:14px; }
+  .icon-btn.is-live-active{ background:var(--accent-soft); color:var(--accent-ink); }
+
   .print-header{ display:none; }
   @media print{
     body, #cifrados-app{ background:#fff !important; }
@@ -451,11 +468,11 @@
   const FLAT_TO_SHARP = {Db:'C#',Eb:'D#',Gb:'F#',Ab:'G#',Bb:'A#',Cb:'B',Fb:'E'};
   const ALLOWED_SUFFIX = /^[majindusg0-9#+\-]*$/i;
 
-  const SECTION_TYPES = ['Intro','Verso 1','Verso 2','Verso 3','Pre Coro','Coro','Puente','Final'];
-  const SECTION_ABBR = { 'Intro':'I', 'Verso 1':'V1', 'Verso 2':'V2', 'Verso 3':'V3', 'Pre Coro':'Pr', 'Coro':'C', 'Puente':'P', 'Final':'F' };
+  const SECTION_TYPES = ['Intro','Verso 1','Verso 2','Verso 3','Pre Coro','Coro','Coro 1','Coro 2','Puente','Final'];
+  const SECTION_ABBR = { 'Intro':'I', 'Verso 1':'V1', 'Verso 2':'V2', 'Verso 3':'V3', 'Pre Coro':'Pr', 'Coro':'C', 'Coro 1':'C1', 'Coro 2':'C2', 'Puente':'P', 'Final':'F' };
   const SECTION_COLORS = {
     'Intro':'63,120,110', 'Verso 1':'90,101,163', 'Verso 2':'90,101,163', 'Verso 3':'90,101,163',
-    'Pre Coro':'184,134,46', 'Coro':'166,90,54', 'Puente':'63,122,82', 'Final':'107,114,128'
+    'Pre Coro':'184,134,46', 'Coro':'166,90,54', 'Coro 1':'166,90,54', 'Coro 2':'193,72,108', 'Puente':'63,122,82', 'Final':'107,114,128'
   };
   function sectionAbbr(tipo){ return SECTION_ABBR[tipo] || (tipo ? tipo.slice(0,2).toUpperCase() : '·'); }
   function sectionColor(tipo){ return SECTION_COLORS[tipo] || '107,114,128'; }
@@ -567,7 +584,20 @@
   let userRole = 'musico';
   function isLider(){ return userRole === 'lider'; }
 
-  let state = { view:'inicio', currentId:null, query:'' };
+  let cachedMembers = null;
+  let loadingMembers = false;
+  function loadMembers(onDone){
+    if(cachedMembers){ onDone(cachedMembers); return; }
+    if(!db || loadingMembers) return;
+    loadingMembers = true;
+    db.collection('usuarios').get().then(snap => {
+      cachedMembers = snap.docs.map(d => d.data()).sort((a,b) => (a.email||'').localeCompare(b.email||''));
+      loadingMembers = false;
+      onDone(cachedMembers);
+    }).catch(e => { console.warn('No se pudo cargar la lista de miembros', e); loadingMembers = false; });
+  }
+
+  let state = { view:'inicio', currentId:null, query:'', liveView:false };
   let toastTimer = null;
 
   function showToast(msg){
@@ -650,6 +680,7 @@
         <div class="sec-box-header">
           <span class="dot"></span><span>${escapeHtml(sectionLabel(sec))}</span>
         </div>
+        ${sec.nota ? `<p class="sec-note">${ICONS.note} ${escapeHtml(sec.nota)}</p>` : ''}
         <pre class="chord-sheet" style="--sheet-size:${16*scale}px">${renderCuerpo(sec.contenido || '', semis)}</pre>
       </div>
     `;
@@ -682,6 +713,7 @@
         <div class="sec-box-header">
           <span class="dot"></span><span>${escapeHtml(sectionLabel(sec))}</span>
         </div>
+        ${sec.nota ? `<p class="sec-note">${ICONS.note} ${escapeHtml(sec.nota)}</p>` : ''}
         <pre class="chord-sheet chords-flow" style="--sheet-size:${16*scale}px">${chordsHtml}</pre>
       </div>
     `;
@@ -697,7 +729,9 @@
     music: '<svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>',
     pdf: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M9 15h1.5a1.5 1.5 0 0 0 0-3H9v5"/><path d="M13.5 12v5h1a2 2 0 0 0 2-2v-1a2 2 0 0 0-2-2Z"/></svg>',
     headphones: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="3" y="14" width="5" height="7" rx="1.5"/><rect x="16" y="14" width="5" height="7" rx="1.5"/></svg>',
-    calendar: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>'
+    calendar: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
+    note: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+    live: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>'
   };
 
   const DIAS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
@@ -732,6 +766,7 @@
 
   function go(view, id){
     if((view === 'form' || view === 'share' || view === 'culto-form') && !isLider()) view = 'list';
+    if(view !== 'detail' || id !== state.currentId) state.liveView = false;
     state.view = view; state.currentId = id || null; render(); window.scrollTo(0,0);
   }
 
@@ -764,6 +799,7 @@
   function render(){
     if(currentUser === undefined){ renderAuthLoading(); return; }
     if(currentUser === null){ renderLogin(); return; }
+    if(state.view !== 'detail') app.classList.remove('live-mode');
     if(state.view === 'inicio') renderInicio();
     else if(state.view === 'list') renderList();
     else if(state.view === 'detail') renderDetail();
@@ -896,11 +932,22 @@
             <li><b>Transformar vidas:</b> Contribuir a que los creyentes maduren y reflejen el carácter de Cristo a través del canto y la verdad de las Escrituras.</li>
           </ul>
         </div>
+        <div class="mv-card">
+          <h2>Miembros del equipo</h2>
+          ${cachedMembers ? `
+            <ul class="mv-list">
+              ${cachedMembers.map(m => `
+                <li>${m.rol === 'lider' ? '👑' : '👁'} <b>${escapeHtml(m.email || 'Sin correo')}</b> — ${m.rol === 'lider' ? 'Líder' : 'Músico'}</li>
+              `).join('')}
+            </ul>
+          ` : `<p style="color:var(--ink-soft); font-size:14px; margin:0;">Cargando miembros...</p>`}
+        </div>
       </div>
       ${pinModalHtml()}
     `;
     wireTabs();
     wireRoleBadge(renderInicio);
+    if(!cachedMembers) loadMembers(() => { if(state.view === 'inicio') renderInicio(); });
   }
 
   function renderList(){
@@ -935,7 +982,7 @@
                 <button class="song-card" data-open="${s.id}">
                   <div class="song-card-info">
                     <p class="song-card-title">${escapeHtml(s.titulo)}</p>
-                    <p class="song-card-artist">${escapeHtml(s.artista || 'Sin artista')}</p>
+                    <p class="song-card-artist">${escapeHtml(s.artista || 'Sin artista')}${s.tempo ? ' · ' + escapeHtml(s.tempo) + ' BPM' : ''}</p>
                   </div>
                   <span class="tono-badge">${escapeHtml(transposeChordToken(s.tono || '-', s.transpose||0))}</span>
                 </button>
@@ -970,9 +1017,10 @@
         <button class="icon-btn" id="btn-back" aria-label="Volver">${ICONS.back}</button>
         <div class="detail-titles">
           <h1>${escapeHtml(song.titulo)}</h1>
-          <p>${escapeHtml(song.artista || 'Sin artista')}</p>
+          <p>${escapeHtml(song.artista || 'Sin artista')}${song.tempo ? ' · ' + escapeHtml(song.tempo) + ' BPM' : ''}</p>
         </div>
         <div class="detail-actions">
+          <button class="icon-btn ${state.liveView ? 'is-live-active' : ''}" id="btn-live" aria-label="Vista en vivo">${ICONS.live}</button>
           <button class="icon-btn" id="btn-pdf" aria-label="Descargar PDF">${ICONS.pdf}</button>
           ${isLider() ? `<button class="icon-btn" id="btn-edit" aria-label="Editar">${ICONS.edit}</button>` : ''}
           ${isLider() ? `<button class="icon-btn" id="btn-delete" aria-label="Eliminar">${ICONS.trash}</button>` : ''}
@@ -1030,7 +1078,9 @@
         </div>
       </div>
     `;
+    app.classList.toggle('live-mode', state.liveView);
     app.querySelector('#btn-back').addEventListener('click', () => go('list'));
+    app.querySelector('#btn-live').addEventListener('click', () => { state.liveView = !state.liveView; renderDetail(); });
     app.querySelector('#btn-pdf').addEventListener('click', () => { app.querySelector('#pdf-modal').hidden = false; });
     app.querySelector('#pdf-modal').addEventListener('click', (e) => { if(e.target.id === 'pdf-modal') app.querySelector('#pdf-modal').hidden = true; });
     app.querySelector('#btn-pdf-cancel').addEventListener('click', () => { app.querySelector('#pdf-modal').hidden = true; });
@@ -1089,6 +1139,7 @@
             <input type="number" min="1" max="20" id="sec-veces-${idx}" class="sec-veces-input" data-idx="${idx}" value="${sec.veces || 1}" />
             <span>${(sec.veces||1) > 1 ? 'veces' : 'vez'}</span>
           </div>
+          <input type="text" class="sec-nota-input" data-idx="${idx}" value="${escapeHtml(sec.nota || '')}" placeholder="Nota de matiz (opcional): entra guitarra, solo batería..." style="margin-bottom:8px; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:8px 10px; font-size:13px; color:var(--ink); font-family:var(--font-body); width:100%;" />
           <textarea class="sec-contenido" data-idx="${idx}" placeholder="Acordes en su propia línea, letra debajo">${escapeHtml(sec.contenido)}</textarea>
         </div>
       `;
@@ -1106,6 +1157,9 @@
       }));
       list.querySelectorAll('.sec-contenido').forEach(ta => ta.addEventListener('input', e => {
         formSecciones[+e.target.dataset.idx].contenido = e.target.value;
+      }));
+      list.querySelectorAll('.sec-nota-input').forEach(inp => inp.addEventListener('input', e => {
+        formSecciones[+e.target.dataset.idx].nota = e.target.value;
       }));
       list.querySelectorAll('.sec-move-up').forEach(btn => btn.addEventListener('click', () => {
         const i = +btn.dataset.idx;
@@ -1142,7 +1196,7 @@
             <input id="f-tono" type="text" value="${escapeHtml(editing ? editing.tono : '')}" placeholder="Ej: G, Am, D7" />
           </div>
           <div class="field">
-            <label for="f-tempo">Tempo</label>
+            <label for="f-tempo">Tempo (BPM)</label>
             <input id="f-tempo" type="text" value="${escapeHtml(editing ? (editing.tempo||'') : '')}" placeholder="Ej: 68" />
           </div>
         </div>
@@ -1167,7 +1221,7 @@
     renderSeccionesList();
     app.querySelector('#btn-back').addEventListener('click', () => editing ? go('detail', editing.id) : go('list'));
     app.querySelector('#btn-add-seccion').addEventListener('click', () => {
-      formSecciones.push({ id: uid(), tipo: 'Coro', contenido: '' });
+      formSecciones.push({ id: uid(), tipo: 'Coro', contenido: '', nota: '' });
       renderSeccionesList();
     });
     if(editing){
@@ -1185,7 +1239,7 @@
       const tono = app.querySelector('#f-tono').value.trim() || '-';
       const tempo = app.querySelector('#f-tempo').value.trim();
       const link = app.querySelector('#f-link').value.trim();
-      const secciones = formSecciones.map(s => ({ id: s.id, tipo: s.tipo, contenido: s.contenido, veces: s.veces || 1 }));
+      const secciones = formSecciones.map(s => ({ id: s.id, tipo: s.tipo, contenido: s.contenido, veces: s.veces || 1, nota: s.nota || '' }));
       if(!titulo){ showToast('Falta el título de la canción'); app.querySelector('#f-titulo').focus(); return; }
       if(editing){
         editing.titulo = titulo; editing.artista = artista; editing.tono = tono; editing.tempo = tempo; editing.link = link; editing.secciones = secciones;
