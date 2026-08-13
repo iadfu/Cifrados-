@@ -1,0 +1,1544 @@
+<style>
+  :root{
+    --bg:#F4F2ED;
+    --bg-elevated:#FFFFFF;
+    --ink:#1F2A44;
+    --ink-soft:#5B6785;
+    --accent:#B8862E;
+    --accent-ink:#6B4A15;
+    --accent-soft:rgba(184,134,46,0.14);
+    --chord:#96631A;
+    --success:#3F6659;
+    --danger:#A23E3E;
+    --danger-soft:rgba(162,62,62,0.12);
+    --border:rgba(31,42,68,0.14);
+    --shadow:rgba(31,42,68,0.16);
+    --radius:14px;
+    --font-display: ui-serif, Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+    --font-body: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', 'Roboto Mono', Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#141A2B; --bg-elevated:#1D2438; --ink:#ECE7DA; --ink-soft:#A6ACC4;
+      --accent:#E0A94B; --accent-ink:#F1D9A6; --accent-soft:rgba(224,169,75,0.16);
+      --chord:#E7B85C; --success:#7BB39D; --danger:#E38585; --danger-soft:rgba(227,133,133,0.14);
+      --border:rgba(236,231,218,0.16); --shadow:rgba(0,0,0,0.45);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#141A2B; --bg-elevated:#1D2438; --ink:#ECE7DA; --ink-soft:#A6ACC4;
+    --accent:#E0A94B; --accent-ink:#F1D9A6; --accent-soft:rgba(224,169,75,0.16);
+    --chord:#E7B85C; --success:#7BB39D; --danger:#E38585; --danger-soft:rgba(227,133,133,0.14);
+    --border:rgba(236,231,218,0.16); --shadow:rgba(0,0,0,0.45);
+  }
+  :root[data-theme="light"]{
+    --bg:#F4F2ED; --bg-elevated:#FFFFFF; --ink:#1F2A44; --ink-soft:#5B6785;
+    --accent:#B8862E; --accent-ink:#6B4A15; --accent-soft:rgba(184,134,46,0.14);
+    --chord:#96631A; --success:#3F6659; --danger:#A23E3E; --danger-soft:rgba(162,62,62,0.12);
+    --border:rgba(31,42,68,0.14); --shadow:rgba(31,42,68,0.16);
+  }
+  *{box-sizing:border-box;}
+  @media (prefers-reduced-motion: reduce){ *{ transition:none !important; animation:none !important; } }
+  body{ margin:0; }
+  #cifrados-app{
+    min-height:100vh;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--font-body);
+    max-width:560px;
+    margin:0 auto;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+  @media (min-width:700px){
+    #cifrados-app{ max-width:760px; }
+  }
+  @media (min-width:1000px){
+    #cifrados-app{ max-width:960px; }
+  }
+  button{ font-family:inherit; cursor:pointer; }
+  button:focus-visible, input:focus-visible, textarea:focus-visible{
+    outline:2px solid var(--accent); outline-offset:2px;
+  }
+  .topbar{
+    position:sticky; top:0; z-index:5;
+    background:var(--bg); border-bottom:1px solid var(--border);
+    padding:16px 18px 12px;
+    display:flex; flex-direction:column; gap:12px;
+  }
+  .topbar-row{ display:flex; align-items:center; gap:10px; }
+  .icon-btn{
+    width:40px; height:40px; flex:none;
+    display:flex; align-items:center; justify-content:center;
+    background:transparent; border:1px solid transparent; border-radius:10px; color:var(--ink);
+  }
+  .icon-btn:hover{ background:var(--accent-soft); }
+  .app-title{
+    font-family:var(--font-display); font-size:22px; font-weight:600;
+    letter-spacing:0.2px; margin:0; flex:1;
+  }
+  .role-badge{
+    flex:none; font-size:12.5px; font-weight:700; padding:6px 11px; border-radius:999px;
+    border:1px solid var(--border); background:var(--bg-elevated); color:var(--ink-soft);
+    font-family:var(--font-body);
+  }
+  .role-badge.is-lider{ color:var(--accent-ink); background:var(--accent-soft); border-color:transparent; }
+  .tab-bar{ display:flex; gap:8px; padding-top:2px; }
+  .tab-btn{
+    flex:1; padding:10px; border-radius:10px; border:1px solid var(--border);
+    background:var(--bg-elevated); color:var(--ink-soft); font-size:14px; font-weight:700;
+    font-family:var(--font-body);
+  }
+  .tab-btn.active{ background:var(--accent); border-color:var(--accent); color:#241705; }
+  .search-wrap{
+    display:flex; align-items:center; gap:8px;
+    background:var(--bg-elevated); border:1px solid var(--border); border-radius:12px;
+    padding:9px 12px;
+  }
+  .search-wrap input{
+    border:none; outline:none; background:transparent; color:var(--ink);
+    font-size:15px; width:100%; font-family:var(--font-body);
+  }
+  .search-wrap input::placeholder{ color:var(--ink-soft); }
+  main{ flex:1; padding:14px 18px 100px; }
+  .empty-state{
+    margin-top:60px; text-align:center; color:var(--ink-soft);
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+  }
+  .empty-state svg{ opacity:0.5; }
+  .song-list{ display:flex; flex-direction:column; gap:10px; list-style:none; padding:0; margin:0; }
+  @media (min-width:700px){
+    .song-list{ display:grid; grid-template-columns:repeat(2, 1fr); align-items:start; }
+  }
+  @media (min-width:1000px){
+    .song-list{ grid-template-columns:repeat(3, 1fr); }
+  }
+  .song-card{
+    background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius);
+    padding:14px 16px; display:flex; align-items:center; gap:12px;
+    box-shadow:0 1px 2px var(--shadow); text-align:left; width:100%; color:var(--ink);
+  }
+  .song-card:hover{ border-color:var(--accent); }
+  .song-card-info{ flex:1; min-width:0; }
+  .song-card-title{
+    font-family:var(--font-display); font-size:17px; font-weight:700; margin:0 0 2px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .song-card-artist{ font-size:13.5px; color:var(--ink-soft); margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .tono-badge{
+    flex:none; font-family:var(--font-mono); font-weight:700; font-size:14px;
+    color:var(--accent-ink); background:var(--accent-soft); border-radius:8px;
+    padding:5px 9px; min-width:34px; text-align:center;
+  }
+  .fab{
+    position:fixed; bottom:26px; left:50%; transform:translateX(calc(-1 * min(280px, 50vw) + 0px));
+    z-index:6;
+  }
+  .fab-inner{
+    max-width:560px; margin:0 auto; padding:0 18px; display:flex; justify-content:flex-end;
+    pointer-events:none;
+  }
+  .fab button{
+    pointer-events:auto;
+    width:58px; height:58px; border-radius:50%; border:none;
+    background:var(--accent); color:#241705; box-shadow:0 6px 16px var(--shadow);
+    display:flex; align-items:center; justify-content:center;
+  }
+  :root[data-theme="dark"] .fab button, @media (prefers-color-scheme:dark){ .fab button{ color:#241705; } }
+
+  .detail-header{
+    display:flex; align-items:flex-start; gap:10px; padding:16px 18px 8px; position:sticky; top:0;
+    background:var(--bg); z-index:5; border-bottom:1px solid var(--border);
+  }
+  .detail-titles{ flex:1; min-width:0; }
+  .detail-titles h1{ font-family:var(--font-display); font-size:21px; font-weight:700; margin:2px 0 0; text-wrap:balance; }
+  .detail-titles p{ margin:2px 0 0; color:var(--ink-soft); font-size:14px; }
+  .detail-actions{ display:flex; gap:4px; }
+
+  .ref-link-wrap{ padding:12px 18px 0; }
+  .ref-link{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:9px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--accent-soft); color:var(--accent-ink); font-size:13.5px; font-weight:700;
+    text-decoration:none; font-family:var(--font-body);
+  }
+  .ref-link:hover{ border-color:var(--accent); }
+
+  .sec-roadmap{ display:flex; gap:8px; overflow-x:auto; padding:14px 18px 0; }
+  .sec-pill{
+    display:inline-flex; align-items:center; gap:6px; flex:none;
+    padding:6px 12px; border-radius:999px; border:1px solid var(--border);
+    background:var(--bg-elevated); font-size:12.5px; font-weight:700;
+    color:var(--ink-soft); white-space:nowrap; font-family:var(--font-body);
+  }
+  .sec-pill:hover{ border-color:var(--accent); color:var(--ink); }
+  .sec-pill .dot{ width:8px; height:8px; border-radius:50%; background:var(--dot); flex:none; }
+
+  .chord-scroll{ padding:14px 18px 18px; }
+  @media (min-width:700px){
+    .chord-scroll{ display:grid; grid-template-columns:repeat(2, 1fr); gap:0 18px; align-items:start; }
+    .chord-scroll .sec-box{ margin-bottom:18px; }
+  }
+  .print-columns, .print-columns-acordes{ display:none; }
+  .sec-box{
+    border:1px solid var(--border); border-radius:var(--radius);
+    margin-bottom:14px; background:var(--bg-elevated); overflow:hidden;
+  }
+  .sec-box:last-child{ margin-bottom:0; }
+  .sec-box-header{ display:flex; align-items:center; gap:8px; padding:10px 16px; border-bottom:1px solid var(--border); }
+  .sec-box-header .dot{ width:9px; height:9px; border-radius:50%; background:var(--dot); flex:none; }
+  .sec-box-header span{ font-weight:700; font-size:12.5px; text-transform:uppercase; letter-spacing:0.05em; color:var(--ink); }
+  .chord-sheet{
+    font-family:var(--font-mono); white-space:pre; line-height:1.75;
+    font-size:var(--sheet-size, 16px); tab-size:4;
+    overflow-x:auto; padding:14px 16px; margin:0; display:block;
+  }
+  .chord-sheet .line{ display:block; }
+  .chord-sheet.chords-flow .line{ white-space:pre-wrap; margin-bottom:8px; }
+  .chord-sheet.chords-flow .line:last-child{ margin-bottom:0; }
+  .chord{ color:var(--chord); font-weight:800; letter-spacing:0.02em; }
+
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,0.5);
+    display:flex; align-items:flex-end; justify-content:center; z-index:30;
+  }
+  .modal-overlay[hidden]{ display:none; }
+  .modal-card{
+    background:var(--bg-elevated); width:100%; max-width:560px;
+    border-radius:18px 18px 0 0; padding:20px 18px calc(20px + env(safe-area-inset-bottom));
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .modal-card h2{ font-family:var(--font-display); font-size:18px; margin:0; }
+  .modal-card p{ margin:0 0 6px; color:var(--ink-soft); font-size:14px; }
+
+  .transpose-bar{
+    position:sticky; bottom:0; z-index:5;
+    background:var(--bg-elevated); border-top:1px solid var(--border);
+    padding:12px 18px calc(12px + env(safe-area-inset-bottom));
+    display:flex; align-items:center; justify-content:center; gap:18px;
+  }
+  .step-btn{
+    width:46px; height:46px; border-radius:50%; border:1px solid var(--border);
+    background:var(--bg); color:var(--ink); font-size:20px; font-weight:600;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .step-btn:hover{ border-color:var(--accent); color:var(--accent-ink); }
+  .tono-display{ font-family:var(--font-mono); font-size:15px; color:var(--ink-soft); min-width:110px; text-align:center; }
+  .tono-display b{ font-size:20px; color:var(--ink); display:block; }
+  .fontsize-toggle{ display:flex; gap:2px; margin-left:6px; }
+  .fontsize-toggle button{
+    width:34px; height:34px; border-radius:8px; border:1px solid var(--border); background:var(--bg);
+    color:var(--ink-soft); font-family:var(--font-mono); font-size:13px;
+  }
+  .fontsize-toggle button:hover{ color:var(--ink); border-color:var(--accent); }
+
+  .form-view{ padding:16px 18px 40px; display:flex; flex-direction:column; gap:16px; }
+  @media (min-width:700px){
+    .form-view, .share-view, .inicio-view{ max-width:640px; margin:0 auto; width:100%; }
+  }
+  .field-row{ display:flex; gap:12px; }
+  .field-row .field{ flex:1; min-width:0; }
+  .field{ display:flex; flex-direction:column; gap:6px; }
+  .field label{ font-size:13px; font-weight:600; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.04em; }
+  .field input, .field textarea{
+    background:var(--bg-elevated); border:1px solid var(--border); border-radius:10px;
+    padding:11px 13px; font-size:15.5px; color:var(--ink); font-family:var(--font-body);
+  }
+  .field textarea{ font-family:var(--font-mono); min-height:260px; line-height:1.6; resize:vertical; }
+  .field small{ color:var(--ink-soft); font-size:12.5px; }
+  .form-actions{ display:flex; gap:10px; margin-top:4px; }
+  .btn{
+    flex:1; padding:13px 16px; border-radius:12px; border:1px solid var(--border);
+    background:var(--bg-elevated); color:var(--ink); font-size:15px; font-weight:600;
+  }
+  .btn-primary{ background:var(--accent); border-color:var(--accent); color:#241705; }
+  .btn-danger{ background:var(--danger-soft); border-color:transparent; color:var(--danger); flex:none; }
+
+  .sec-edit-row{
+    border:1px solid var(--border); border-radius:10px; padding:10px;
+    margin-bottom:10px; background:var(--bg-elevated);
+  }
+  .sec-edit-top{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; }
+  .sec-edit-top select{
+    flex:1; min-width:0; background:var(--bg); border:1px solid var(--border); border-radius:8px;
+    padding:8px 10px; font-size:14px; color:var(--ink); font-family:var(--font-body);
+  }
+  .sec-edit-veces{ display:flex; align-items:center; gap:8px; margin-bottom:8px; font-size:13px; color:var(--ink-soft); }
+  .sec-edit-veces label{ font-weight:600; }
+  .sec-edit-veces input{
+    width:52px; background:var(--bg); border:1px solid var(--border); border-radius:8px;
+    padding:6px 8px; font-size:14px; color:var(--ink); font-family:var(--font-body); text-align:center;
+  }
+  .sec-edit-move{ display:flex; gap:2px; flex:none; }
+  .sec-edit-move .icon-btn{ width:34px; height:34px; }
+  .sec-edit-move .icon-btn:disabled{ opacity:0.3; }
+  .sec-edit-move .icon-btn:disabled:hover{ background:transparent; }
+  .sec-contenido{
+    width:100%; font-family:var(--font-mono); background:var(--bg); border:1px solid var(--border);
+    border-radius:8px; padding:10px; font-size:14px; min-height:90px; line-height:1.5;
+    color:var(--ink); resize:vertical; display:block;
+  }
+
+  .share-view{ padding:16px 18px 40px; display:flex; flex-direction:column; gap:22px; }
+  .share-card{
+    background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius);
+    padding:18px; display:flex; flex-direction:column; gap:10px;
+  }
+  .share-card h2{ font-family:var(--font-display); font-size:17px; margin:0; }
+  .share-card p{ margin:0; color:var(--ink-soft); font-size:14px; line-height:1.5; }
+  .file-drop{
+    border:1.5px dashed var(--border); border-radius:12px; padding:16px; text-align:center;
+    color:var(--ink-soft); font-size:14px; position:relative;
+  }
+  .file-drop input[type=file]{ position:absolute; inset:0; opacity:0; cursor:pointer; }
+
+  .inicio-view{ padding:22px 18px 40px; display:flex; flex-direction:column; align-items:center; gap:20px; text-align:center; }
+  .inicio-logo{ width:132px; height:132px; object-fit:contain; }
+  .inicio-title{ font-family:var(--font-display); font-size:19px; font-weight:700; margin:0; color:var(--ink); }
+  .mv-card{ width:100%; text-align:left; background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius); padding:18px; }
+  .mv-card h2{ font-family:var(--font-display); font-size:16.5px; margin:0 0 12px; color:var(--accent-ink); }
+  .mv-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:11px; }
+  .mv-list li{ font-size:14px; line-height:1.55; color:var(--ink-soft); padding-left:16px; position:relative; }
+  .mv-list li::before{ content:'•'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+  .mv-list li b{ color:var(--ink); }
+
+  .auth-view{ background:var(--bg-elevated); }
+  .auth-header{
+    background:var(--bg); border-bottom:1px solid var(--border);
+    padding:14px 24px 12px; text-align:center;
+  }
+  .auth-logo{ width:44px; height:44px; object-fit:contain; margin:0 auto 6px; display:block; }
+  .auth-header-title{ font-family:var(--font-display); font-weight:700; font-size:15px; margin:0 0 2px; color:var(--ink); }
+  .auth-header-sub{ margin:0; color:var(--ink-soft); font-size:11px; }
+  .auth-loading-text{ color:var(--ink-soft); font-size:14px; text-align:center; padding:20px 24px; }
+  .auth-body{ padding:16px 24px 40px; text-align:left; background:var(--bg-elevated); }
+  .auth-heading{ font-family:var(--font-display); font-size:19px; font-weight:700; margin:0 0 3px; color:var(--ink); }
+  .auth-instruction{ margin:0 0 14px; color:var(--ink-soft); font-size:13px; }
+  .auth-form{ width:100%; max-width:400px; display:flex; flex-direction:column; gap:10px; text-align:left; }
+  .auth-error{ color:var(--danger); font-size:13px; margin:0; }
+  .auth-hint{ color:var(--ink-soft); font-size:12.5px; margin-top:16px; text-align:left; }
+  .link-btn{
+    background:none; border:none; padding:0; color:var(--accent-ink); font-weight:700;
+    font-size:inherit; font-family:inherit; text-decoration:underline; cursor:pointer;
+  }
+
+  .toast{
+    position:fixed; bottom:100px; left:50%; transform:translateX(-50%);
+    background:var(--ink); color:var(--bg); padding:10px 18px; border-radius:10px;
+    font-size:13.5px; z-index:20; box-shadow:0 6px 16px var(--shadow);
+  }
+
+  .print-header{ display:none; }
+  @media print{
+    body, #cifrados-app{ background:#fff !important; }
+    .detail-header, .transpose-bar, .topbar, .fab, .toast, .modal-overlay, .ref-link-wrap{ display:none !important; }
+    #cifrados-app{ max-width:none; color:#000; }
+    .print-header{
+      display:flex; justify-content:space-between; align-items:flex-end; gap:20px;
+      padding:0 18px 12px; border-bottom:2px solid #000; margin:0 0 4px;
+    }
+    .print-header h1{ font-family:var(--font-display); font-size:21px; margin:0 0 2px; color:#000; font-weight:700; }
+    .print-header p{ margin:0; font-size:12.5px; color:#333; }
+    .print-header .print-meta{ text-align:right; font-size:12px; color:#000; white-space:nowrap; }
+    .print-header .print-meta b{ font-weight:700; }
+    .sec-roadmap{ padding:10px 18px 4px; }
+    .sec-pill{ border-color:#000; color:#000; }
+    .chord-scroll{ display:none; }
+    .print-columns, .print-columns-acordes{ grid-template-columns:1fr 1fr; gap:22px; padding:8px 18px 18px; align-items:start; }
+    #cifrados-app[data-print-mode="completo"] .print-columns,
+    #cifrados-app[data-print-mode="letra"] .print-columns{ display:grid; }
+    #cifrados-app[data-print-mode="acordes"] .print-columns-acordes{ display:grid; }
+    .print-col{ min-width:0; }
+    .sec-box{ border:1.3px solid #000; break-inside:avoid; }
+    .sec-box-header{ border-bottom:1px solid #000; }
+    .sec-box-header span{ color:#000; }
+    .chord-sheet{ color:#000; font-size:11.5px; line-height:1.55; padding:10px 14px; }
+    .chord{ color:#000; font-weight:800; }
+    #cifrados-app[data-print-mode="letra"] .chord-line{ display:none; }
+  }
+</style>
+
+<div id="cifrados-app"></div>
+
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script>
+(function(){
+  const STORAGE_KEY = 'cifrados_songs_v1';
+  const app = document.getElementById('cifrados-app');
+  const ORIGINAL_TITLE = document.title;
+  let suppressPush = false;
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDTUUNFnH7sq5xDdxnkF6m59u7iBo0S-ac",
+    authDomain: "cifrados-iglesia-iadfu.firebaseapp.com",
+    projectId: "cifrados-iglesia-iadfu",
+    storageBucket: "cifrados-iglesia-iadfu.firebasestorage.app",
+    messagingSenderId: "932430863769",
+    appId: "1:932430863769:web:87b51af43f34d41ddc8708"
+  };
+  let db = null;
+  try{
+    if(window.firebase){
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+    }
+  }catch(e){ console.warn('Firebase no disponible, usando solo almacenamiento local', e); }
+  const LOGO_DATA_URI = "data:image/webp;base64,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";
+
+  (function setupAppIcon(){
+    try{
+      const head = document.head;
+      const meta = (name, content) => { const m = document.createElement('meta'); m.name = name; m.content = content; head.appendChild(m); };
+      const link = (rel, href, sizes) => { const l = document.createElement('link'); l.rel = rel; l.href = href; if(sizes) l.sizes = sizes; head.appendChild(l); };
+      link('icon', LOGO_DATA_URI);
+      link('apple-touch-icon', LOGO_DATA_URI);
+      meta('apple-mobile-web-app-capable', 'yes');
+      meta('mobile-web-app-capable', 'yes');
+      meta('apple-mobile-web-app-title', 'Mis Cifrados');
+      meta('apple-mobile-web-app-status-bar-style', 'black-translucent');
+      meta('theme-color', '#B8862E');
+      const manifest = {
+        name: 'Mis Cifrados', short_name: 'Cifrados',
+        start_url: '.', display: 'standalone', background_color: '#F4F2ED', theme_color: '#B8862E',
+        icons: [
+          { src: LOGO_DATA_URI, sizes: '192x192', type: 'image/jpeg' },
+          { src: LOGO_DATA_URI, sizes: '512x512', type: 'image/jpeg' }
+        ]
+      };
+      const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+      link('manifest', URL.createObjectURL(manifestBlob));
+    }catch(e){ console.warn('No se pudo configurar el ícono de la app', e); }
+  })();
+
+  const SHARP_SCALE = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  const FLAT_TO_SHARP = {Db:'C#',Eb:'D#',Gb:'F#',Ab:'G#',Bb:'A#',Cb:'B',Fb:'E'};
+  const ALLOWED_SUFFIX = /^[majindusg0-9#+\-]*$/i;
+
+  const SECTION_TYPES = ['Intro','Verso 1','Verso 2','Verso 3','Pre Coro','Coro','Puente','Final'];
+  const SECTION_ABBR = { 'Intro':'I', 'Verso 1':'V1', 'Verso 2':'V2', 'Verso 3':'V3', 'Pre Coro':'Pr', 'Coro':'C', 'Puente':'P', 'Final':'F' };
+  const SECTION_COLORS = {
+    'Intro':'63,120,110', 'Verso 1':'90,101,163', 'Verso 2':'90,101,163', 'Verso 3':'90,101,163',
+    'Pre Coro':'184,134,46', 'Coro':'166,90,54', 'Puente':'63,122,82', 'Final':'107,114,128'
+  };
+  function sectionAbbr(tipo){ return SECTION_ABBR[tipo] || (tipo ? tipo.slice(0,2).toUpperCase() : '·'); }
+  function sectionColor(tipo){ return SECTION_COLORS[tipo] || '107,114,128'; }
+
+  function uid(){
+    return (crypto.randomUUID ? crypto.randomUUID() : 'id-' + Date.now() + '-' + Math.random().toString(16).slice(2));
+  }
+
+  function migrateSong(song){
+    if(!song.secciones || !song.secciones.length){
+      song.secciones = [{ id: uid(), tipo: 'Intro', contenido: song.cuerpo || '' }];
+    }
+    delete song.cuerpo;
+    return song;
+  }
+
+  function loadSongs(){
+    try{ const raw = JSON.parse(localStorage.getItem(STORAGE_KEY)); return Array.isArray(raw) ? raw.map(migrateSong) : []; }
+    catch(e){ return []; }
+  }
+  function saveSongsLocal(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(songs)); }
+  function saveSongs(){ saveSongsLocal(); pushToCloud(); }
+
+  function demoSong(){
+    return {
+      id: uid(),
+      titulo: 'Ejemplo — cómo escribir un cifrado',
+      artista: 'Guía rápida (puedes borrar esta canción)',
+      tono: 'G',
+      tempo: '',
+      secciones: [
+        { id: uid(), tipo: 'Intro', contenido: 'G            D            Em           C' },
+        { id: uid(), tipo: 'Verso 1', contenido:
+            'G            D            C\n'
+          + 'Escribe los acordes en su propia línea\n'
+          + 'Em           C            G\n'
+          + 'Toca "Transponer" abajo para cambiar el tono' },
+        { id: uid(), tipo: 'Coro', contenido:
+            'C            G            D\n'
+          + 'Cada sección queda en su propio recuadro' }
+      ],
+      transpose: 0,
+      fontScale: 1,
+      updatedAt: Date.now()
+    };
+  }
+
+  const CULTOS_KEY = 'cifrados_cultos_v1';
+  function loadCultos(){
+    try{ const raw = JSON.parse(localStorage.getItem(CULTOS_KEY)); return Array.isArray(raw) ? raw : []; }
+    catch(e){ return []; }
+  }
+  function saveCultosLocal(){ localStorage.setItem(CULTOS_KEY, JSON.stringify(cultos)); }
+  function saveCultos(){ saveCultosLocal(); pushToCloud(); }
+
+  let songs = loadSongs();
+  let cultos = loadCultos();
+  if(songs.length === 0 && !db){ songs = [demoSong()]; saveSongsLocal(); }
+
+  function pushToCloud(){
+    if(!db || suppressPush) return;
+    const cloudSongs = songs.map(s => ({
+      id: s.id, titulo: s.titulo, artista: s.artista, tono: s.tono,
+      tempo: s.tempo || '', link: s.link || '', secciones: s.secciones, updatedAt: s.updatedAt
+    }));
+    db.collection('iglesia').doc('datos').set({ songs: cloudSongs, cultos, syncedAt: Date.now() })
+      .catch(e => console.warn('No se pudo sincronizar con la nube', e));
+  }
+  function mergeCloudData(data){
+    suppressPush = true;
+    if(Array.isArray(data.songs)){
+      const localById = new Map(songs.map(s => [s.id, s]));
+      songs = data.songs.map(cs => {
+        const local = localById.get(cs.id);
+        return migrateSong({
+          ...cs,
+          transpose: local ? (local.transpose || 0) : 0,
+          fontScale: local ? (local.fontScale || 1) : 1
+        });
+      });
+      saveSongsLocal();
+    }
+    if(Array.isArray(data.cultos)){
+      cultos = data.cultos;
+      saveCultosLocal();
+    }
+    suppressPush = false;
+    render();
+  }
+  function initCloudSync(){
+    if(!db) return;
+    const ref = db.collection('iglesia').doc('datos');
+    let first = true;
+    ref.onSnapshot(snap => {
+      if(snap.exists){
+        mergeCloudData(snap.data());
+      } else if(first){
+        if(songs.length === 0){ songs = [demoSong()]; }
+        saveSongsLocal();
+        saveCultosLocal();
+        pushToCloud();
+        render();
+      }
+      first = false;
+    }, e => console.warn('Sincronización interrumpida', e));
+  }
+
+  let currentUser = undefined; // undefined = aún no se sabe, null = sin sesión, objeto = con sesión
+  let userRole = 'musico';
+  function isLider(){ return userRole === 'lider'; }
+
+  let state = { view:'inicio', currentId:null, query:'' };
+  let toastTimer = null;
+
+  function showToast(msg){
+    clearTimeout(toastTimer);
+    let el = app.querySelector('.toast');
+    if(!el){ el = document.createElement('div'); el.className='toast'; app.appendChild(el); }
+    el.textContent = msg;
+    toastTimer = setTimeout(()=>{ el.remove(); }, 2600);
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function noteIndex(note){
+    let n = note;
+    if(FLAT_TO_SHARP[n]) n = FLAT_TO_SHARP[n];
+    return SHARP_SCALE.indexOf(n);
+  }
+  function transposeNote(note, semitones){
+    const idx = noteIndex(note);
+    if(idx < 0) return note;
+    const newIdx = ((idx + semitones) % 12 + 12) % 12;
+    return SHARP_SCALE[newIdx];
+  }
+  function parseChord(tok){
+    const m = tok.match(/^([A-G])(#|b)?([A-Za-z0-9#+\-\/]*)$/);
+    if(!m) return null;
+    return { root: m[1], acc: m[2] || '', rest: m[3] || '' };
+  }
+  function isChordToken(tok){
+    const p = parseChord(tok);
+    if(!p) return false;
+    let suffix = p.rest;
+    const slash = suffix.match(/^(.*)\/([A-G])(#|b)?$/);
+    if(slash) suffix = slash[1];
+    if(suffix.length > 7) return false;
+    return ALLOWED_SUFFIX.test(suffix);
+  }
+  function transposeChordToken(tok, semitones){
+    if(!semitones) return tok;
+    const p = parseChord(tok);
+    if(!p) return tok;
+    const newRoot = transposeNote(p.root + p.acc, semitones);
+    const slash = p.rest.match(/^(.*)\/([A-G])(#|b)?$/);
+    if(slash){
+      const mainSuffix = slash[1];
+      const newBass = transposeNote(slash[2] + (slash[3]||''), semitones);
+      return newRoot + mainSuffix + '/' + newBass;
+    }
+    return newRoot + p.rest;
+  }
+
+  function renderCuerpo(cuerpo, semitones){
+    return cuerpo.split('\n').map(line=>{
+      if(line.trim() === '') return '<span class="line lyric-line"></span>';
+      const tokens = line.match(/\S+/g) || [];
+      const allChords = tokens.length > 0 && tokens.every(isChordToken);
+      if(!allChords) return '<span class="line lyric-line">' + escapeHtml(line) + '</span>';
+      let out = ''; let lastIndex = 0;
+      const re = /\S+/g; let mm;
+      while((mm = re.exec(line))){
+        out += escapeHtml(line.slice(lastIndex, mm.index));
+        out += '<span class="chord">' + escapeHtml(transposeChordToken(mm[0], semitones)) + '</span>';
+        lastIndex = mm.index + mm[0].length;
+      }
+      out += escapeHtml(line.slice(lastIndex));
+      return '<span class="line chord-line">' + out + '</span>';
+    }).join('');
+  }
+
+  function sectionLabel(sec){
+    const v = sec.veces && sec.veces > 1 ? ' ×' + sec.veces : '';
+    return (sec.tipo || 'Sección') + v;
+  }
+
+  function sectionBoxHtml(sec, semis, scale, withId){
+    return `
+      <div class="sec-box" ${withId ? `id="sec-${sec.id}"` : ''}>
+        <div class="sec-box-header" style="--dot:rgb(${sectionColor(sec.tipo)})">
+          <span class="dot"></span><span>${escapeHtml(sectionLabel(sec))}</span>
+        </div>
+        <pre class="chord-sheet" style="--sheet-size:${16*scale}px">${renderCuerpo(sec.contenido || '', semis)}</pre>
+      </div>
+    `;
+  }
+
+  function renderChordsOnly(cuerpo, semitones){
+    const paragraphs = [];
+    let current = [];
+    cuerpo.split('\n').forEach(line => {
+      if(line.trim() === ''){
+        if(current.length){ paragraphs.push(current); current = []; }
+        return;
+      }
+      const tokens = line.match(/\S+/g) || [];
+      const allChords = tokens.length > 0 && tokens.every(isChordToken);
+      if(!allChords) return;
+      tokens.forEach(t => current.push(transposeChordToken(t, semitones)));
+    });
+    if(current.length) paragraphs.push(current);
+    return paragraphs.map(p =>
+      '<span class="line chord-line">' + p.map(t => '<span class="chord">' + escapeHtml(t) + '</span>').join('  ') + '</span>'
+    ).join('');
+  }
+
+  function sectionBoxHtmlChordsOnly(sec, semis, scale){
+    const chordsHtml = renderChordsOnly(sec.contenido || '', semis);
+    if(!chordsHtml) return '';
+    return `
+      <div class="sec-box">
+        <div class="sec-box-header" style="--dot:rgb(${sectionColor(sec.tipo)})">
+          <span class="dot"></span><span>${escapeHtml(sectionLabel(sec))}</span>
+        </div>
+        <pre class="chord-sheet chords-flow" style="--sheet-size:${16*scale}px">${chordsHtml}</pre>
+      </div>
+    `;
+  }
+
+  const ICONS = {
+    search: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>',
+    plus: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+    back: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>',
+    edit: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+    share: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5l6.8-3.9M8.6 13.5l6.8 3.9"/></svg>',
+    trash: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg>',
+    music: '<svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>',
+    pdf: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M9 15h1.5a1.5 1.5 0 0 0 0-3H9v5"/><path d="M13.5 12v5h1a2 2 0 0 0 2-2v-1a2 2 0 0 0-2-2Z"/></svg>',
+    headphones: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="3" y="14" width="5" height="7" rx="1.5"/><rect x="16" y="14" width="5" height="7" rx="1.5"/></svg>',
+    calendar: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>'
+  };
+
+  const DIAS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  function formatFecha(fecha){
+    if(!fecha) return '';
+    const [y,m,d] = fecha.split('-').map(Number);
+    const dt = new Date(y, m-1, d);
+    return DIAS[dt.getDay()] + ' ' + d + ' de ' + MESES[m-1] + ' de ' + y;
+  }
+  function formatHora(hora){
+    if(!hora) return '';
+    let [h,min] = hora.split(':').map(Number);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12; if(h === 0) h = 12;
+    return h + ':' + String(min).padStart(2,'0') + ' ' + ampm;
+  }
+
+  function normalizeUrl(url){
+    if(!url) return '';
+    return /^[a-z]+:\/\//i.test(url) ? url : 'https://' + url;
+  }
+  function detectPlatform(url){
+    try{
+      const host = new URL(normalizeUrl(url)).hostname.replace('www.','');
+      if(host.includes('youtube') || host.includes('youtu.be')) return 'YouTube';
+      if(host.includes('spotify')) return 'Spotify';
+      if(host.includes('music.apple')) return 'Apple Music';
+      return 'link externo';
+    } catch(e){ return 'link externo'; }
+  }
+
+  function go(view, id){
+    if((view === 'form' || view === 'share' || view === 'culto-form') && !isLider()) view = 'list';
+    state.view = view; state.currentId = id || null; render(); window.scrollTo(0,0);
+  }
+
+  function tabBarHtml(active){
+    return `
+      <div class="tab-bar">
+        <button type="button" class="tab-btn ${active==='inicio'?'active':''}" id="tab-inicio">Inicio</button>
+        <button type="button" class="tab-btn ${active==='cifrados'?'active':''}" id="tab-cifrados">Cifrados</button>
+        <button type="button" class="tab-btn ${active==='repertorio'?'active':''}" id="tab-repertorio">Repertorio</button>
+      </div>
+    `;
+  }
+  function wireTabs(){
+    app.querySelector('#tab-inicio').addEventListener('click', () => go('inicio'));
+    app.querySelector('#tab-cifrados').addEventListener('click', () => go('list'));
+    app.querySelector('#tab-repertorio').addEventListener('click', () => go('cultos'));
+  }
+
+  function pinModalHtml(){ return ''; }
+  function wireRoleBadge(rerender){
+    const btn = app.querySelector('#btn-role');
+    if(!btn) return;
+    btn.addEventListener('click', () => {
+      if(confirm('¿Cerrar sesión de ' + (currentUser ? currentUser.email : '') + '?')){
+        firebase.auth().signOut();
+      }
+    });
+  }
+
+  function render(){
+    if(currentUser === undefined){ renderAuthLoading(); return; }
+    if(currentUser === null){ renderLogin(); return; }
+    if(state.view === 'inicio') renderInicio();
+    else if(state.view === 'list') renderList();
+    else if(state.view === 'detail') renderDetail();
+    else if(state.view === 'form') renderForm();
+    else if(state.view === 'share') renderShare();
+    else if(state.view === 'cultos') renderCultos();
+    else if(state.view === 'culto-detail') renderCultoDetail();
+    else if(state.view === 'culto-form') renderCultoForm();
+  }
+
+  function renderAuthLoading(){
+    app.innerHTML = `
+      <div class="auth-view">
+        <div class="auth-header">
+          <img class="auth-logo" src="${LOGO_DATA_URI}" alt="Logo" />
+          <p class="auth-header-title">Mis Cifrados</p>
+        </div>
+        <p class="auth-loading-text">Cargando…</p>
+      </div>
+    `;
+  }
+
+  let authMode = 'login';
+  function renderLogin(){
+    const isSignup = authMode === 'signup';
+    app.innerHTML = `
+      <div class="auth-view">
+        <div class="auth-header">
+          <img class="auth-logo" src="${LOGO_DATA_URI}" alt="Logo Iglesia Asamblea de Dios Familia Unida" />
+          <p class="auth-header-title">Mis Cifrados</p>
+          <p class="auth-header-sub">Iglesia Asamblea de Dios Familia Unida</p>
+        </div>
+        <div class="auth-body">
+          <h1 class="auth-heading">${isSignup ? 'Crear cuenta' : 'Iniciar sesión'}</h1>
+          <p class="auth-instruction">${isSignup ? 'Regístrate con tu correo para empezar.' : 'Ingresa con tu correo y contraseña.'}</p>
+          <form class="auth-form" id="login-form">
+            <div class="field">
+              <label for="login-email">Correo</label>
+              <input id="login-email" type="email" autocomplete="username" required placeholder="tu@correo.com" />
+            </div>
+            <div class="field">
+              <label for="login-pass">Contraseña</label>
+              <input id="login-pass" type="password" autocomplete="${isSignup ? 'new-password' : 'current-password'}" required placeholder="••••••••" minlength="6" />
+            </div>
+            ${isSignup ? `
+              <div class="field">
+                <label for="login-pass2">Confirma tu contraseña</label>
+                <input id="login-pass2" type="password" autocomplete="new-password" required placeholder="••••••••" minlength="6" />
+              </div>
+            ` : ''}
+            <p class="auth-error" id="login-error" hidden></p>
+            <button type="submit" class="btn btn-primary" id="btn-login">${isSignup ? 'Crear cuenta' : 'Iniciar sesión'}</button>
+          </form>
+          <p class="auth-hint">
+            ${isSignup ? '¿Ya tienes cuenta?' : '¿No tienes cuenta?'}
+            <button type="button" class="link-btn" id="btn-toggle-auth">${isSignup ? 'Inicia sesión' : 'Crea una aquí'}</button>
+          </p>
+        </div>
+      </div>
+    `;
+    const form = app.querySelector('#login-form');
+    const errorEl = app.querySelector('#login-error');
+    app.querySelector('#btn-toggle-auth').addEventListener('click', () => {
+      authMode = isSignup ? 'login' : 'signup';
+      renderLogin();
+    });
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      errorEl.hidden = true;
+      const email = app.querySelector('#login-email').value.trim();
+      const pass = app.querySelector('#login-pass').value;
+      const btn = app.querySelector('#btn-login');
+
+      if(isSignup){
+        const pass2 = app.querySelector('#login-pass2').value;
+        if(pass !== pass2){
+          errorEl.textContent = 'Las contraseñas no coinciden.';
+          errorEl.hidden = false;
+          return;
+        }
+        btn.disabled = true; btn.textContent = 'Creando…';
+        firebase.auth().createUserWithEmailAndPassword(email, pass)
+          .catch(err => {
+            errorEl.textContent = err.code === 'auth/email-already-in-use' ? 'Ese correo ya tiene una cuenta.'
+              : err.code === 'auth/weak-password' ? 'La contraseña debe tener al menos 6 caracteres.'
+              : err.code === 'auth/invalid-email' ? 'Correo inválido.'
+              : 'No se pudo crear la cuenta. Intenta de nuevo.';
+            errorEl.hidden = false;
+            btn.disabled = false; btn.textContent = 'Crear cuenta';
+          });
+      } else {
+        btn.disabled = true; btn.textContent = 'Entrando…';
+        firebase.auth().signInWithEmailAndPassword(email, pass)
+          .catch(err => {
+            errorEl.textContent = err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found'
+              ? 'Correo o contraseña incorrectos.'
+              : 'No se pudo iniciar sesión. Intenta de nuevo.';
+            errorEl.hidden = false;
+            btn.disabled = false; btn.textContent = 'Iniciar sesión';
+          });
+      }
+    });
+  }
+
+  function renderInicio(){
+    app.innerHTML = `
+      <div class="topbar">
+        <div class="topbar-row">
+          <h1 class="app-title" style="font-size:17px;">Iglesia Asamblea de Dios Familia Unida</h1>
+          <button class="role-badge ${isLider() ? 'is-lider' : ''}" id="btn-role">${isLider() ? '👑 Líder' : '👁 Músico'}</button>
+        </div>
+        ${tabBarHtml('inicio')}
+      </div>
+      <div class="inicio-view">
+        <img class="inicio-logo" src="${LOGO_DATA_URI}" alt="Logo Iglesia Asamblea de Dios Familia Unida" />
+        <h2 class="inicio-title">Ministerio de Alabanza</h2>
+        <div class="mv-card">
+          <h2>Visión</h2>
+          <ul class="mv-list">
+            <li><b>Adoración apasionada:</b> Ver a las personas adorar a Cristo con gran fervor y una profunda sed por Su Palabra.</li>
+            <li><b>Comunión integral:</b> Fomentar una relación íntima con Dios que se note en la vida de cada día.</li>
+            <li><b>Equilibrio espiritual:</b> Lograr que la adoración colectiva combine el gozo entusiasta con la reverencia santa hacia Dios.</li>
+          </ul>
+        </div>
+        <div class="mv-card">
+          <h2>Misión</h2>
+          <ul class="mv-list">
+            <li><b>Cantar la verdad:</b> Proveer canciones con bases bíblicas sólidas que proclamen los atributos de Dios y la obra redentora de Jesucristo.</li>
+            <li><b>Edificar la iglesia:</b> Servir a la congregación facilitando recursos musicales centrados en el Evangelio.</li>
+            <li><b>Transformar vidas:</b> Contribuir a que los creyentes maduren y reflejen el carácter de Cristo a través del canto y la verdad de las Escrituras.</li>
+          </ul>
+        </div>
+      </div>
+      ${pinModalHtml()}
+    `;
+    wireTabs();
+    wireRoleBadge(renderInicio);
+  }
+
+  function renderList(){
+    const q = state.query.trim().toLowerCase();
+    const filtered = songs
+      .filter(s => !q || s.titulo.toLowerCase().includes(q) || (s.artista||'').toLowerCase().includes(q))
+      .sort((a,b) => a.titulo.localeCompare(b.titulo, 'es'));
+
+    app.innerHTML = `
+      <div class="topbar">
+        <div class="topbar-row">
+          <h1 class="app-title">Mis Cifrados</h1>
+          <button class="role-badge ${isLider() ? 'is-lider' : ''}" id="btn-role">${isLider() ? '👑 Líder' : '👁 Músico'}</button>
+          ${isLider() ? `<button class="icon-btn" id="btn-share" aria-label="Compartir y respaldar">${ICONS.share}</button>` : ''}
+        </div>
+        ${tabBarHtml('cifrados')}
+        <div class="search-wrap">
+          ${ICONS.search}
+          <input type="text" id="search-input" placeholder="Buscar por título o artista..." value="${escapeHtml(state.query)}" />
+        </div>
+      </div>
+      <main>
+        ${filtered.length === 0 ? `
+          <div class="empty-state">
+            ${ICONS.music}
+            <p>${songs.length === 0 ? 'Aún no tienes cifrados guardados.' : 'Sin resultados para tu búsqueda.'}</p>
+          </div>
+        ` : `
+          <ul class="song-list">
+            ${filtered.map(s => `
+              <li>
+                <button class="song-card" data-open="${s.id}">
+                  <div class="song-card-info">
+                    <p class="song-card-title">${escapeHtml(s.titulo)}</p>
+                    <p class="song-card-artist">${escapeHtml(s.artista || 'Sin artista')}</p>
+                  </div>
+                  <span class="tono-badge">${escapeHtml(transposeChordToken(s.tono || '-', s.transpose||0))}</span>
+                </button>
+              </li>
+            `).join('')}
+          </ul>
+        `}
+      </main>
+      ${isLider() ? `<div class="fab"><div class="fab-inner"><button id="btn-new" aria-label="Agregar cifrado">${ICONS.plus}</button></div></div>` : ''}
+      ${pinModalHtml()}
+    `;
+    app.querySelector('#search-input').addEventListener('input', e => { state.query = e.target.value; renderList(); });
+    if(isLider()) app.querySelector('#btn-new').addEventListener('click', () => go('form', null));
+    if(isLider()) app.querySelector('#btn-share').addEventListener('click', () => go('share'));
+    wireTabs();
+    wireRoleBadge(renderList);
+    app.querySelectorAll('[data-open]').forEach(btn => {
+      btn.addEventListener('click', () => go('detail', btn.dataset.open));
+    });
+  }
+
+  function renderDetail(){
+    const song = songs.find(s => s.id === state.currentId);
+    if(!song){ go('list'); return; }
+    const semis = song.transpose || 0;
+    const scale = song.fontScale || 1;
+    const displayTono = transposeChordToken(song.tono || '-', semis);
+    const secciones = song.secciones && song.secciones.length ? song.secciones : [{ id:'x', tipo:'', contenido:'' }];
+
+    app.innerHTML = `
+      <div class="detail-header">
+        <button class="icon-btn" id="btn-back" aria-label="Volver">${ICONS.back}</button>
+        <div class="detail-titles">
+          <h1>${escapeHtml(song.titulo)}</h1>
+          <p>${escapeHtml(song.artista || 'Sin artista')}</p>
+        </div>
+        <div class="detail-actions">
+          <button class="icon-btn" id="btn-pdf" aria-label="Descargar PDF">${ICONS.pdf}</button>
+          ${isLider() ? `<button class="icon-btn" id="btn-edit" aria-label="Editar">${ICONS.edit}</button>` : ''}
+          ${isLider() ? `<button class="icon-btn" id="btn-delete" aria-label="Eliminar">${ICONS.trash}</button>` : ''}
+        </div>
+      </div>
+      ${song.link ? `
+        <div class="ref-link-wrap">
+          <a class="ref-link" href="${escapeHtml(normalizeUrl(song.link))}" target="_blank" rel="noopener noreferrer">
+            ${ICONS.headphones} Escuchar en ${escapeHtml(detectPlatform(song.link))}
+          </a>
+        </div>
+      ` : ''}
+      <div class="print-header">
+        <div>
+          <h1>${escapeHtml(song.titulo)}</h1>
+          <p>${escapeHtml(song.artista || 'Sin artista')}</p>
+        </div>
+        <div class="print-meta">
+          <div>Tono: <b>${escapeHtml(displayTono)}</b></div>
+          ${song.tempo ? `<div>Tempo: <b>${escapeHtml(song.tempo)}</b></div>` : ''}
+        </div>
+      </div>
+      <div class="sec-roadmap">
+        ${secciones.map(sec => `
+          <button type="button" class="sec-pill" data-scrollto="sec-${sec.id}" style="--dot:rgb(${sectionColor(sec.tipo)})">
+            <span class="dot"></span>${escapeHtml(sectionAbbr(sec.tipo) + (sec.veces && sec.veces > 1 ? '×' + sec.veces : ''))}
+          </button>
+        `).join('')}
+      </div>
+      <div class="chord-scroll">
+        ${secciones.map(sec => sectionBoxHtml(sec, semis, scale, true)).join('')}
+      </div>
+      <div class="print-columns">
+        <div class="print-col">${secciones.slice(0, Math.ceil(secciones.length/2)).map(sec => sectionBoxHtml(sec, semis, scale, false)).join('')}</div>
+        <div class="print-col">${secciones.slice(Math.ceil(secciones.length/2)).map(sec => sectionBoxHtml(sec, semis, scale, false)).join('')}</div>
+      </div>
+      <div class="print-columns-acordes">
+        <div class="print-col">${secciones.slice(0, Math.ceil(secciones.length/2)).map(sec => sectionBoxHtmlChordsOnly(sec, semis, scale)).join('')}</div>
+        <div class="print-col">${secciones.slice(Math.ceil(secciones.length/2)).map(sec => sectionBoxHtmlChordsOnly(sec, semis, scale)).join('')}</div>
+      </div>
+      <div class="transpose-bar">
+        <button class="step-btn" id="btn-down" aria-label="Bajar semitono">−</button>
+        <div class="tono-display">Tono<b>${escapeHtml(displayTono)}</b></div>
+        <button class="step-btn" id="btn-up" aria-label="Subir semitono">+</button>
+        <div class="fontsize-toggle">
+          <button id="btn-font-down" aria-label="Letra más chica">A−</button>
+          <button id="btn-font-up" aria-label="Letra más grande">A+</button>
+        </div>
+      </div>
+      <div class="modal-overlay" id="pdf-modal" hidden>
+        <div class="modal-card">
+          <h2>Descargar PDF</h2>
+          <p>¿Qué versión quieres generar?</p>
+          <button class="btn" id="btn-pdf-letra">Clasificación + letra</button>
+          <button class="btn" id="btn-pdf-acordes">Clasificación + acordes</button>
+          <button class="btn btn-primary" id="btn-pdf-completo">Clasificación + acordes + letra</button>
+          <button class="btn" id="btn-pdf-cancel">Cancelar</button>
+        </div>
+      </div>
+    `;
+    app.querySelector('#btn-back').addEventListener('click', () => go('list'));
+    app.querySelector('#btn-pdf').addEventListener('click', () => { app.querySelector('#pdf-modal').hidden = false; });
+    app.querySelector('#pdf-modal').addEventListener('click', (e) => { if(e.target.id === 'pdf-modal') app.querySelector('#pdf-modal').hidden = true; });
+    app.querySelector('#btn-pdf-cancel').addEventListener('click', () => { app.querySelector('#pdf-modal').hidden = true; });
+    function printWithMode(mode){
+      app.querySelector('#pdf-modal').hidden = true;
+      app.dataset.printMode = mode;
+      document.title = song.titulo.replace(/[\\/:*?"<>|]/g, '-');
+      window.print();
+    }
+    app.querySelector('#btn-pdf-letra').addEventListener('click', () => printWithMode('letra'));
+    app.querySelector('#btn-pdf-acordes').addEventListener('click', () => printWithMode('acordes'));
+    app.querySelector('#btn-pdf-completo').addEventListener('click', () => printWithMode('completo'));
+    if(isLider()){
+      app.querySelector('#btn-edit').addEventListener('click', () => go('form', song.id));
+      app.querySelector('#btn-delete').addEventListener('click', () => {
+        if(confirm('¿Eliminar "' + song.titulo + '"? Esta acción no se puede deshacer.')){
+          songs = songs.filter(s => s.id !== song.id);
+          saveSongs();
+          go('list');
+        }
+      });
+    }
+    app.querySelector('#btn-down').addEventListener('click', () => { song.transpose = (song.transpose||0) - 1; saveSongs(); renderDetail(); });
+    app.querySelector('#btn-up').addEventListener('click', () => { song.transpose = (song.transpose||0) + 1; saveSongs(); renderDetail(); });
+    app.querySelector('#btn-font-down').addEventListener('click', () => { song.fontScale = Math.max(0.75, (song.fontScale||1) - 0.125); saveSongs(); renderDetail(); });
+    app.querySelector('#btn-font-up').addEventListener('click', () => { song.fontScale = Math.min(2, (song.fontScale||1) + 0.125); saveSongs(); renderDetail(); });
+    app.querySelectorAll('.sec-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const el = document.getElementById(btn.dataset.scrollto);
+        if(el) el.scrollIntoView({ behavior:'smooth', block:'start' });
+      });
+    });
+  }
+
+  function renderForm(){
+    const editing = state.currentId ? songs.find(s => s.id === state.currentId) : null;
+    let formSecciones = (editing && editing.secciones && editing.secciones.length)
+      ? editing.secciones.map(s => ({ id: uid(), tipo: s.tipo, contenido: s.contenido, veces: s.veces || 1 }))
+      : [{ id: uid(), tipo: 'Intro', contenido: '', veces: 1 }];
+
+    function seccionRowHtml(sec, idx){
+      return `
+        <div class="sec-edit-row">
+          <div class="sec-edit-top">
+            <select class="sec-tipo-select" data-idx="${idx}">
+              ${SECTION_TYPES.map(t => `<option value="${t}" ${t===sec.tipo?'selected':''}>${t}</option>`).join('')}
+            </select>
+            <div class="sec-edit-move">
+              <button type="button" class="icon-btn sec-move-up" data-idx="${idx}" aria-label="Subir sección" ${idx===0?'disabled':''}>↑</button>
+              <button type="button" class="icon-btn sec-move-down" data-idx="${idx}" aria-label="Bajar sección" ${idx===formSecciones.length-1?'disabled':''}>↓</button>
+              <button type="button" class="icon-btn sec-remove" data-idx="${idx}" aria-label="Eliminar sección">${ICONS.trash}</button>
+            </div>
+          </div>
+          <div class="sec-edit-veces">
+            <label for="sec-veces-${idx}">Se repite</label>
+            <input type="number" min="1" max="20" id="sec-veces-${idx}" class="sec-veces-input" data-idx="${idx}" value="${sec.veces || 1}" />
+            <span>${(sec.veces||1) > 1 ? 'veces' : 'vez'}</span>
+          </div>
+          <textarea class="sec-contenido" data-idx="${idx}" placeholder="Acordes en su propia línea, letra debajo">${escapeHtml(sec.contenido)}</textarea>
+        </div>
+      `;
+    }
+
+    function renderSeccionesList(){
+      const list = app.querySelector('#secciones-list');
+      list.innerHTML = formSecciones.map(seccionRowHtml).join('');
+      list.querySelectorAll('.sec-tipo-select').forEach(sel => sel.addEventListener('change', e => {
+        formSecciones[+e.target.dataset.idx].tipo = e.target.value;
+      }));
+      list.querySelectorAll('.sec-veces-input').forEach(inp => inp.addEventListener('input', e => {
+        const val = Math.max(1, Math.min(20, parseInt(e.target.value, 10) || 1));
+        formSecciones[+e.target.dataset.idx].veces = val;
+      }));
+      list.querySelectorAll('.sec-contenido').forEach(ta => ta.addEventListener('input', e => {
+        formSecciones[+e.target.dataset.idx].contenido = e.target.value;
+      }));
+      list.querySelectorAll('.sec-move-up').forEach(btn => btn.addEventListener('click', () => {
+        const i = +btn.dataset.idx;
+        if(i > 0){ [formSecciones[i-1], formSecciones[i]] = [formSecciones[i], formSecciones[i-1]]; renderSeccionesList(); }
+      }));
+      list.querySelectorAll('.sec-move-down').forEach(btn => btn.addEventListener('click', () => {
+        const i = +btn.dataset.idx;
+        if(i < formSecciones.length - 1){ [formSecciones[i+1], formSecciones[i]] = [formSecciones[i], formSecciones[i+1]]; renderSeccionesList(); }
+      }));
+      list.querySelectorAll('.sec-remove').forEach(btn => btn.addEventListener('click', () => {
+        if(formSecciones.length <= 1){ showToast('Debe quedar al menos una sección'); return; }
+        formSecciones.splice(+btn.dataset.idx, 1);
+        renderSeccionesList();
+      }));
+    }
+
+    app.innerHTML = `
+      <div class="detail-header">
+        <button class="icon-btn" id="btn-back" aria-label="Volver">${ICONS.back}</button>
+        <div class="detail-titles"><h1>${editing ? 'Editar cifrado' : 'Nuevo cifrado'}</h1></div>
+      </div>
+      <div class="form-view">
+        <div class="field">
+          <label for="f-titulo">Título</label>
+          <input id="f-titulo" type="text" value="${escapeHtml(editing ? editing.titulo : '')}" placeholder="Nombre de la canción" />
+        </div>
+        <div class="field">
+          <label for="f-artista">Artista / autor</label>
+          <input id="f-artista" type="text" value="${escapeHtml(editing ? (editing.artista||'') : '')}" placeholder="Opcional" />
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="f-tono">Tono original</label>
+            <input id="f-tono" type="text" value="${escapeHtml(editing ? editing.tono : '')}" placeholder="Ej: G, Am, D7" />
+          </div>
+          <div class="field">
+            <label for="f-tempo">Tempo</label>
+            <input id="f-tempo" type="text" value="${escapeHtml(editing ? (editing.tempo||'') : '')}" placeholder="Ej: 68" />
+          </div>
+        </div>
+        <small style="margin-top:-10px; color:var(--ink-soft)">Tono: notación de acordes C D E F G A B, con m, 7, sus4, etc.</small>
+        <div class="field">
+          <label for="f-link">Link de referencia</label>
+          <input id="f-link" type="url" value="${escapeHtml(editing ? (editing.link||'') : '')}" placeholder="YouTube, Spotify, Apple Music..." />
+          <small>Opcional. Los músicos van a poder tocarlo para escuchar la versión original.</small>
+        </div>
+        <div class="field">
+          <label>Secciones del cifrado</label>
+          <div id="secciones-list"></div>
+          <button type="button" class="btn" id="btn-add-seccion" style="width:100%">+ Agregar sección</button>
+          <small>Clasifica cada bloque (Intro, Verso 1, Coro, etc.) y escribe los acordes en su propia línea, arriba de la letra.</small>
+        </div>
+        <div class="form-actions">
+          ${editing ? '<button class="btn btn-danger" id="btn-delete" aria-label="Eliminar">' + ICONS.trash + '</button>' : ''}
+          <button class="btn btn-primary" id="btn-save">Guardar</button>
+        </div>
+      </div>
+    `;
+    renderSeccionesList();
+    app.querySelector('#btn-back').addEventListener('click', () => editing ? go('detail', editing.id) : go('list'));
+    app.querySelector('#btn-add-seccion').addEventListener('click', () => {
+      formSecciones.push({ id: uid(), tipo: 'Coro', contenido: '' });
+      renderSeccionesList();
+    });
+    if(editing){
+      app.querySelector('#btn-delete').addEventListener('click', () => {
+        if(confirm('¿Eliminar "' + editing.titulo + '"?')){
+          songs = songs.filter(s => s.id !== editing.id);
+          saveSongs();
+          go('list');
+        }
+      });
+    }
+    app.querySelector('#btn-save').addEventListener('click', () => {
+      const titulo = app.querySelector('#f-titulo').value.trim();
+      const artista = app.querySelector('#f-artista').value.trim();
+      const tono = app.querySelector('#f-tono').value.trim() || '-';
+      const tempo = app.querySelector('#f-tempo').value.trim();
+      const link = app.querySelector('#f-link').value.trim();
+      const secciones = formSecciones.map(s => ({ id: s.id, tipo: s.tipo, contenido: s.contenido, veces: s.veces || 1 }));
+      if(!titulo){ showToast('Falta el título de la canción'); app.querySelector('#f-titulo').focus(); return; }
+      if(editing){
+        editing.titulo = titulo; editing.artista = artista; editing.tono = tono; editing.tempo = tempo; editing.link = link; editing.secciones = secciones;
+        editing.updatedAt = Date.now();
+        saveSongs();
+        go('detail', editing.id);
+      } else {
+        const song = { id: uid(), titulo, artista, tono, tempo, link, secciones, transpose:0, fontScale:1, updatedAt: Date.now() };
+        songs.push(song);
+        saveSongs();
+        go('detail', song.id);
+      }
+    });
+  }
+
+  function renderShare(){
+    app.innerHTML = `
+      <div class="detail-header">
+        <button class="icon-btn" id="btn-back" aria-label="Volver">${ICONS.back}</button>
+        <div class="detail-titles"><h1>Compartir con el equipo</h1></div>
+      </div>
+      <div class="share-view">
+        <div class="share-card">
+          <h2>1. Exportar tus cifrados</h2>
+          <p>Descarga un archivo con todo tu repertorio (${songs.length} canción${songs.length===1?'':'es'}) y envíalo por WhatsApp o correo al equipo de alabanza.</p>
+          <button class="btn btn-primary" id="btn-export">Descargar archivo de respaldo</button>
+        </div>
+        <div class="share-card">
+          <h2>2. Importar cifrados recibidos</h2>
+          <p>Si alguien del equipo te envió un archivo exportado desde esta misma app, súbelo aquí para agregarlo a tu lista.</p>
+          <div class="file-drop">
+            Toca para elegir el archivo (.json)
+            <input type="file" id="file-import" accept="application/json,.json" />
+          </div>
+        </div>
+        <div class="share-card">
+          <h2>Cómo funciona</h2>
+          <p>Ahora cada persona entra con su propio correo y contraseña, y los cambios que hace el Líder se sincronizan solos con todo el equipo. El respaldo de aquí sigue sirviendo como copia de seguridad extra.</p>
+        </div>
+      </div>
+    `;
+    app.querySelector('#btn-back').addEventListener('click', () => go('list'));
+    app.querySelector('#btn-export').addEventListener('click', async () => {
+      const data = JSON.stringify({ exportedAt: new Date().toISOString(), songs }, null, 2);
+      const filename = 'cifrados-respaldo-' + new Date().toISOString().slice(0,10) + '.json';
+      try{
+        if(window.claude && window.claude.downloads){
+          const res = await window.claude.downloads.save({ filename, data });
+          if(res && res.accepted === false){ showToast('Descarga cancelada'); return; }
+          showToast('Archivo descargado');
+        } else {
+          throw new Error('no downloads api');
+        }
+      } catch(e){
+        const blob = new Blob([data], {type:'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+        a.remove(); URL.revokeObjectURL(url);
+        showToast('Archivo descargado');
+      }
+    });
+    app.querySelector('#file-import').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try{
+          const parsed = JSON.parse(reader.result);
+          const incoming = Array.isArray(parsed) ? parsed : parsed.songs;
+          if(!Array.isArray(incoming)) throw new Error('formato inválido');
+          let added = 0;
+          incoming.forEach(item => {
+            if(!item || !item.titulo) return;
+            const exists = songs.some(s => s.titulo === item.titulo && s.artista === item.artista);
+            if(exists) return;
+            const secciones = (item.secciones && item.secciones.length)
+              ? item.secciones.map(s => ({ id: uid(), tipo: s.tipo || 'Intro', contenido: s.contenido || '', veces: s.veces || 1 }))
+              : [{ id: uid(), tipo: 'Intro', contenido: item.cuerpo || '' }];
+            songs.push({
+              id: uid(),
+              titulo: item.titulo,
+              artista: item.artista || '',
+              tono: item.tono || '-',
+              tempo: item.tempo || '',
+              link: item.link || '',
+              secciones,
+              transpose: 0,
+              fontScale: 1,
+              updatedAt: Date.now()
+            });
+            added++;
+          });
+          saveSongs();
+          showToast(added + ' cifrado' + (added===1?'':'s') + ' importado' + (added===1?'':'s'));
+          renderShare();
+        } catch(err){
+          showToast('No se pudo leer el archivo');
+        }
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  function renderCultos(){
+    const sorted = [...cultos].sort((a,b) => (a.fecha+ (a.hora||'')).localeCompare(b.fecha + (b.hora||'')));
+    app.innerHTML = `
+      <div class="topbar">
+        <div class="topbar-row">
+          <h1 class="app-title">Repertorio</h1>
+          <button class="role-badge ${isLider() ? 'is-lider' : ''}" id="btn-role">${isLider() ? '👑 Líder' : '👁 Músico'}</button>
+        </div>
+        ${tabBarHtml('repertorio')}
+      </div>
+      <main>
+        ${sorted.length === 0 ? `
+          <div class="empty-state">
+            ${ICONS.music}
+            <p>Aún no hay repertorios armados.</p>
+          </div>
+        ` : `
+          <ul class="song-list">
+            ${sorted.map(c => `
+              <li>
+                <button class="song-card" data-open-culto="${c.id}">
+                  <div class="song-card-info">
+                    <p class="song-card-title">${escapeHtml(c.nombre || 'Culto')}</p>
+                    <p class="song-card-artist">${escapeHtml(formatFecha(c.fecha))}${c.hora ? ' · ' + escapeHtml(formatHora(c.hora)) : ''}</p>
+                  </div>
+                  <span class="tono-badge">${c.songIds.length}</span>
+                </button>
+              </li>
+            `).join('')}
+          </ul>
+        `}
+      </main>
+      ${isLider() ? `<div class="fab"><div class="fab-inner"><button id="btn-new-culto" aria-label="Nuevo repertorio">${ICONS.plus}</button></div></div>` : ''}
+      ${pinModalHtml()}
+    `;
+    if(isLider()) app.querySelector('#btn-new-culto').addEventListener('click', () => go('culto-form', null));
+    app.querySelectorAll('[data-open-culto]').forEach(btn => {
+      btn.addEventListener('click', () => go('culto-detail', btn.dataset.openCulto));
+    });
+    wireTabs();
+    wireRoleBadge(renderCultos);
+  }
+
+  function renderCultoDetail(){
+    const culto = cultos.find(c => c.id === state.currentId);
+    if(!culto){ go('cultos'); return; }
+    const list = culto.songIds.map(id => songs.find(s => s.id === id)).filter(Boolean);
+    app.innerHTML = `
+      <div class="detail-header">
+        <button class="icon-btn" id="btn-back" aria-label="Volver">${ICONS.back}</button>
+        <div class="detail-titles">
+          <h1>${escapeHtml(culto.nombre || 'Culto')}</h1>
+          <p>${escapeHtml(formatFecha(culto.fecha))}${culto.hora ? ' · ' + escapeHtml(formatHora(culto.hora)) : ''}</p>
+        </div>
+        <div class="detail-actions">
+          ${isLider() ? `<button class="icon-btn" id="btn-edit-culto" aria-label="Editar">${ICONS.edit}</button>` : ''}
+          ${isLider() ? `<button class="icon-btn" id="btn-delete-culto" aria-label="Eliminar">${ICONS.trash}</button>` : ''}
+        </div>
+      </div>
+      <main>
+        ${list.length === 0 ? `
+          <div class="empty-state">
+            ${ICONS.music}
+            <p>Este repertorio no tiene canciones todavía.</p>
+          </div>
+        ` : `
+          <ul class="song-list" style="padding:14px 18px;">
+            ${list.map((s,i) => `
+              <li>
+                <button class="song-card" data-open="${s.id}">
+                  <span class="tono-badge" style="min-width:26px;">${i+1}</span>
+                  <div class="song-card-info">
+                    <p class="song-card-title">${escapeHtml(s.titulo)}</p>
+                    <p class="song-card-artist">${escapeHtml(s.artista || 'Sin artista')}</p>
+                  </div>
+                  <span class="tono-badge">${escapeHtml(transposeChordToken(s.tono || '-', s.transpose||0))}</span>
+                </button>
+              </li>
+            `).join('')}
+          </ul>
+        `}
+      </main>
+    `;
+    app.querySelector('#btn-back').addEventListener('click', () => go('cultos'));
+    app.querySelectorAll('[data-open]').forEach(btn => {
+      btn.addEventListener('click', () => go('detail', btn.dataset.open));
+    });
+    if(isLider()){
+      app.querySelector('#btn-edit-culto').addEventListener('click', () => go('culto-form', culto.id));
+      app.querySelector('#btn-delete-culto').addEventListener('click', () => {
+        if(confirm('¿Eliminar este repertorio? Esta acción no se puede deshacer.')){
+          cultos = cultos.filter(c => c.id !== culto.id);
+          saveCultos();
+          go('cultos');
+        }
+      });
+    }
+  }
+
+  function renderCultoForm(){
+    const editing = state.currentId ? cultos.find(c => c.id === state.currentId) : null;
+    let formSongIds = editing ? [...editing.songIds] : [];
+    let pickerQuery = '';
+
+    function songRowHtml(id, idx){
+      const s = songs.find(x => x.id === id);
+      if(!s) return '';
+      return `
+        <div class="sec-edit-row">
+          <div class="sec-edit-top" style="margin-bottom:0;">
+            <div style="flex:1;min-width:0;">
+              <p class="song-card-title" style="font-size:15px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${idx+1}. ${escapeHtml(s.titulo)}</p>
+            </div>
+            <div class="sec-edit-move">
+              <button type="button" class="icon-btn culto-move-up" data-idx="${idx}" aria-label="Subir" ${idx===0?'disabled':''}>↑</button>
+              <button type="button" class="icon-btn culto-move-down" data-idx="${idx}" aria-label="Bajar" ${idx===formSongIds.length-1?'disabled':''}>↓</button>
+              <button type="button" class="icon-btn culto-remove-song" data-idx="${idx}" aria-label="Quitar">${ICONS.trash}</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSongList(){
+      const list = app.querySelector('#culto-songs-list');
+      list.innerHTML = formSongIds.length
+        ? formSongIds.map(songRowHtml).join('')
+        : '<p style="color:var(--ink-soft);font-size:14px;margin:0;">Aún no agregas canciones.</p>';
+      list.querySelectorAll('.culto-move-up').forEach(btn => btn.addEventListener('click', () => {
+        const i = +btn.dataset.idx;
+        if(i > 0){ [formSongIds[i-1], formSongIds[i]] = [formSongIds[i], formSongIds[i-1]]; renderSongList(); }
+      }));
+      list.querySelectorAll('.culto-move-down').forEach(btn => btn.addEventListener('click', () => {
+        const i = +btn.dataset.idx;
+        if(i < formSongIds.length - 1){ [formSongIds[i+1], formSongIds[i]] = [formSongIds[i], formSongIds[i+1]]; renderSongList(); }
+      }));
+      list.querySelectorAll('.culto-remove-song').forEach(btn => btn.addEventListener('click', () => {
+        formSongIds.splice(+btn.dataset.idx, 1);
+        renderSongList();
+      }));
+    }
+
+    function renderPickerList(){
+      const wrap = app.querySelector('#picker-list');
+      const q = pickerQuery.trim().toLowerCase();
+      const filtered = songs.filter(s => !q || s.titulo.toLowerCase().includes(q));
+      wrap.innerHTML = filtered.length ? filtered.map(s => `
+        <button type="button" class="song-card picker-song-btn" data-id="${s.id}" style="margin-bottom:8px;">
+          <div class="song-card-info">
+            <p class="song-card-title">${escapeHtml(s.titulo)}</p>
+            <p class="song-card-artist">${escapeHtml(s.artista || 'Sin artista')}</p>
+          </div>
+          <span class="tono-badge" style="${formSongIds.includes(s.id) ? 'background:var(--success);color:#fff;' : ''}">${formSongIds.includes(s.id) ? '✓' : '+'}</span>
+        </button>
+      `).join('') : '<p style="color:var(--ink-soft);font-size:14px;padding:8px 0;">Sin resultados.</p>';
+      wrap.querySelectorAll('.picker-song-btn').forEach(btn => btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        const i = formSongIds.indexOf(id);
+        if(i >= 0) formSongIds.splice(i, 1); else formSongIds.push(id);
+        renderPickerList();
+        renderSongList();
+      }));
+    }
+
+    app.innerHTML = `
+      <div class="detail-header">
+        <button class="icon-btn" id="btn-back" aria-label="Volver">${ICONS.back}</button>
+        <div class="detail-titles"><h1>${editing ? 'Editar repertorio' : 'Nuevo repertorio'}</h1></div>
+      </div>
+      <div class="form-view">
+        <div class="field-row">
+          <div class="field">
+            <label for="f-fecha">Fecha</label>
+            <input id="f-fecha" type="date" value="${editing ? editing.fecha : ''}" />
+          </div>
+          <div class="field">
+            <label for="f-hora">Hora de inicio</label>
+            <input id="f-hora" type="time" value="${editing ? (editing.hora||'') : ''}" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="f-nombre-culto">Nombre (opcional)</label>
+          <input id="f-nombre-culto" type="text" value="${escapeHtml(editing ? (editing.nombre||'') : '')}" placeholder="Ej: Culto General, Vigilia..." />
+        </div>
+        <div class="field">
+          <label>Canciones del repertorio</label>
+          <div id="culto-songs-list"></div>
+          <button type="button" class="btn" id="btn-open-picker" style="width:100%">+ Agregar canción</button>
+        </div>
+        <div class="form-actions">
+          ${editing ? '<button class="btn btn-danger" id="btn-delete-culto" aria-label="Eliminar">' + ICONS.trash + '</button>' : ''}
+          <button class="btn btn-primary" id="btn-save-culto">Guardar</button>
+        </div>
+      </div>
+      <div class="modal-overlay" id="picker-modal" hidden>
+        <div class="modal-card" style="max-height:75vh;">
+          <h2>Agregar canciones</h2>
+          <div class="search-wrap"><input type="text" id="picker-search" placeholder="Buscar por título..." /></div>
+          <div id="picker-list" style="overflow-y:auto;"></div>
+          <button class="btn btn-primary" id="btn-picker-done">Listo</button>
+        </div>
+      </div>
+    `;
+    renderSongList();
+    app.querySelector('#btn-back').addEventListener('click', () => editing ? go('culto-detail', editing.id) : go('cultos'));
+    app.querySelector('#btn-open-picker').addEventListener('click', () => {
+      pickerQuery = '';
+      app.querySelector('#picker-search').value = '';
+      renderPickerList();
+      app.querySelector('#picker-modal').hidden = false;
+    });
+    app.querySelector('#picker-search').addEventListener('input', e => { pickerQuery = e.target.value; renderPickerList(); });
+    app.querySelector('#btn-picker-done').addEventListener('click', () => { app.querySelector('#picker-modal').hidden = true; });
+    app.querySelector('#picker-modal').addEventListener('click', (e) => { if(e.target.id === 'picker-modal') e.target.hidden = true; });
+    if(editing){
+      app.querySelector('#btn-delete-culto').addEventListener('click', () => {
+        if(confirm('¿Eliminar este repertorio? Esta acción no se puede deshacer.')){
+          cultos = cultos.filter(c => c.id !== editing.id);
+          saveCultos();
+          go('cultos');
+        }
+      });
+    }
+    app.querySelector('#btn-save-culto').addEventListener('click', () => {
+      const fecha = app.querySelector('#f-fecha').value;
+      const hora = app.querySelector('#f-hora').value;
+      const nombre = app.querySelector('#f-nombre-culto').value.trim();
+      if(!fecha){ showToast('Falta la fecha del culto'); return; }
+      if(editing){
+        editing.fecha = fecha; editing.hora = hora; editing.nombre = nombre; editing.songIds = formSongIds;
+        editing.updatedAt = Date.now();
+        saveCultos();
+        go('culto-detail', editing.id);
+      } else {
+        const culto = { id: uid(), fecha, hora, nombre, songIds: formSongIds, updatedAt: Date.now() };
+        cultos.push(culto);
+        saveCultos();
+        go('culto-detail', culto.id);
+      }
+    });
+  }
+
+  window.addEventListener('afterprint', () => {
+    delete app.dataset.printMode;
+    document.title = ORIGINAL_TITLE;
+  });
+
+  function fetchRoleAndRender(user){
+    currentUser = user;
+    db.collection('usuarios').doc(user.uid).get().then(snap => {
+      if(snap.exists){
+        userRole = snap.data().rol === 'lider' ? 'lider' : 'musico';
+      } else {
+        userRole = 'musico';
+        db.collection('usuarios').doc(user.uid).set({ email: user.email, rol: 'musico', creadoAt: Date.now() }).catch(()=>{});
+      }
+      render();
+      initCloudSync();
+    }).catch(e => {
+      console.warn('No se pudo leer el rol de usuario', e);
+      userRole = 'musico';
+      render();
+      initCloudSync();
+    });
+  }
+
+  render();
+  if(window.firebase && db){
+    firebase.auth().onAuthStateChanged(user => {
+      if(user){ fetchRoleAndRender(user); }
+      else { currentUser = null; userRole = 'musico'; render(); }
+    });
+  } else {
+    currentUser = null;
+    render();
+  }
+})();
+</script>
