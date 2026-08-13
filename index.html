@@ -176,12 +176,13 @@
   .sec-pill:hover{ border-color:var(--accent); color:var(--ink); }
   .sec-pill .dot{ width:8px; height:8px; border-radius:50%; background:var(--dot); flex:none; }
 
-  .chord-scroll{ padding:14px 18px 18px; }
+  .chord-scroll{ padding:14px 18px 18px; display:flex; flex-direction:column; }
+  .chord-col{ display:flex; flex-direction:column; min-width:0; }
   @media (min-width:700px){
-    .chord-scroll{ display:grid; grid-template-columns:repeat(2, 1fr); gap:0 18px; align-items:start; }
-    .chord-scroll .sec-box{ margin-bottom:18px; }
+    .chord-scroll{ flex-direction:row; gap:0 18px; align-items:flex-start; }
+    .chord-col{ flex:1; }
   }
-  .print-columns, .print-columns-acordes{ display:none; }
+  .print-columns-acordes{ display:none; }
   .sec-box{
     border:1px solid var(--border); border-radius:var(--radius);
     margin-bottom:14px; background:var(--bg-elevated); overflow:hidden;
@@ -345,10 +346,9 @@
     .print-header .print-meta b{ font-weight:700; }
     .sec-roadmap{ padding:10px 18px 4px; }
     .sec-pill{ border-color:#000; color:#000; }
-    .chord-scroll{ display:none; }
-    .print-columns, .print-columns-acordes{ grid-template-columns:1fr 1fr; gap:22px; padding:8px 18px 18px; align-items:start; }
-    #cifrados-app[data-print-mode="completo"] .print-columns,
-    #cifrados-app[data-print-mode="letra"] .print-columns{ display:grid; }
+    .chord-scroll{ flex-direction:row; gap:0 22px; padding:8px 18px 18px; align-items:flex-start; }
+    #cifrados-app[data-print-mode="acordes"] .chord-scroll{ display:none; }
+    .print-columns-acordes{ grid-template-columns:1fr 1fr; gap:22px; padding:8px 18px 18px; align-items:start; }
     #cifrados-app[data-print-mode="acordes"] .print-columns-acordes{ display:grid; }
     .print-col{ min-width:0; }
     .sec-box{ border:1.3px solid #000; break-inside:avoid; }
@@ -974,11 +974,8 @@
         `).join('')}
       </div>
       <div class="chord-scroll">
-        ${secciones.map(sec => sectionBoxHtml(sec, semis, scale, true)).join('')}
-      </div>
-      <div class="print-columns">
-        <div class="print-col">${secciones.slice(0, Math.ceil(secciones.length/2)).map(sec => sectionBoxHtml(sec, semis, scale, false)).join('')}</div>
-        <div class="print-col">${secciones.slice(Math.ceil(secciones.length/2)).map(sec => sectionBoxHtml(sec, semis, scale, false)).join('')}</div>
+        <div class="chord-col">${secciones.slice(0, Math.ceil(secciones.length/2)).map(sec => sectionBoxHtml(sec, semis, scale, true)).join('')}</div>
+        <div class="chord-col">${secciones.slice(Math.ceil(secciones.length/2)).map(sec => sectionBoxHtml(sec, semis, scale, true)).join('')}</div>
       </div>
       <div class="print-columns-acordes">
         <div class="print-col">${secciones.slice(0, Math.ceil(secciones.length/2)).map(sec => sectionBoxHtmlChordsOnly(sec, semis, scale)).join('')}</div>
