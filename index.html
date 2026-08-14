@@ -489,7 +489,7 @@
     loadMembers(members => {
       const emails = members.filter(m => m.rol === 'lider' || m.rol === 'musico').map(m => m.email).filter(Boolean);
       if(!emails.length){ showToast('No hay miembros aprobados para enviar.'); return; }
-      const listaTexto = songList.map((s,i) => (i+1) + '. ' + s.titulo + (s.artista ? ' - ' + s.artista : '') + ' (Tono: ' + transposeChordToken(s.tono||'-', s.transpose||0) + ')').join('\n');
+      const listaTexto = songList.map((s,i) => (i+1) + '. ' + s.titulo + (s.artista ? ' - ' + s.artista : '') + ' (Tono: ' + transposeChordToken(s.tono||'-', (culto.transposes && culto.transposes[s.id]) || 0) + ')').join('\n');
       emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_REPERTORIO, {
         to_email: emails.join(','),
         nombre_culto: culto.nombre || 'Culto',
@@ -1617,7 +1617,7 @@
                     <p class="song-card-title">${escapeHtml(s.titulo)}</p>
                     <p class="song-card-artist">${escapeHtml(s.artista || 'Sin artista')}</p>
                   </div>
-                  <span class="tono-badge">${escapeHtml(transposeChordToken(s.tono || '-', s.transpose||0))}</span>
+                  <span class="tono-badge">${escapeHtml(transposeChordToken(s.tono || '-', (culto.transposes && culto.transposes[s.id]) || 0))}</span>
                 </button>
               </li>
             `).join('')}
@@ -1645,11 +1645,14 @@
   function renderCultoForm(){
     const editing = state.currentId ? cultos.find(c => c.id === state.currentId) : null;
     let formSongIds = editing ? [...editing.songIds] : [];
+    let formTransposes = editing ? {...(editing.transposes || {})} : {};
     let pickerQuery = '';
 
     function songRowHtml(id, idx){
       const s = songs.find(x => x.id === id);
       if(!s) return '';
+      const semis = formTransposes[id] || 0;
+      const tonoCulto = transposeChordToken(s.tono || '-', semis);
       return `
         <div class="sec-edit-row">
           <div class="sec-edit-top" style="margin-bottom:0;">
@@ -1661,6 +1664,13 @@
               <button type="button" class="icon-btn culto-move-down" data-idx="${idx}" aria-label="Bajar" ${idx===formSongIds.length-1?'disabled':''}>↓</button>
               <button type="button" class="icon-btn culto-remove-song" data-idx="${idx}" aria-label="Quitar">${ICONS.trash}</button>
             </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--ink-soft);">
+            <span>Tono para este repertorio:</span>
+            <button type="button" class="icon-btn culto-tono-down" data-id="${id}" aria-label="Bajar tono" style="width:30px;height:30px;">−</button>
+            <b style="color:var(--ink); min-width:26px; text-align:center; font-family:var(--font-mono);">${escapeHtml(tonoCulto)}</b>
+            <button type="button" class="icon-btn culto-tono-up" data-id="${id}" aria-label="Subir tono" style="width:30px;height:30px;">+</button>
+            ${semis !== 0 ? `<span style="font-size:12px;">(original: ${escapeHtml(s.tono||'-')})</span>` : ''}
           </div>
         </div>
       `;
@@ -1681,6 +1691,16 @@
       }));
       list.querySelectorAll('.culto-remove-song').forEach(btn => btn.addEventListener('click', () => {
         formSongIds.splice(+btn.dataset.idx, 1);
+        renderSongList();
+      }));
+      list.querySelectorAll('.culto-tono-down').forEach(btn => btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        formTransposes[id] = (formTransposes[id] || 0) - 1;
+        renderSongList();
+      }));
+      list.querySelectorAll('.culto-tono-up').forEach(btn => btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        formTransposes[id] = (formTransposes[id] || 0) + 1;
         renderSongList();
       }));
     }
@@ -1772,12 +1792,12 @@
       const nombre = app.querySelector('#f-nombre-culto').value.trim();
       if(!fecha){ showToast('Falta la fecha del culto'); return; }
       if(editing){
-        editing.fecha = fecha; editing.hora = hora; editing.nombre = nombre; editing.songIds = formSongIds;
+        editing.fecha = fecha; editing.hora = hora; editing.nombre = nombre; editing.songIds = formSongIds; editing.transposes = formTransposes;
         editing.updatedAt = Date.now();
         saveCultos();
         go('culto-detail', editing.id);
       } else {
-        const culto = { id: uid(), fecha, hora, nombre, songIds: formSongIds, updatedAt: Date.now() };
+        const culto = { id: uid(), fecha, hora, nombre, songIds: formSongIds, transposes: formTransposes, updatedAt: Date.now() };
         cultos.push(culto);
         saveCultos();
         go('culto-detail', culto.id);
