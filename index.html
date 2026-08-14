@@ -641,6 +641,15 @@
     }).catch(e => { console.warn('No se pudo aprobar al miembro', e); showToast('No se pudo aprobar. Intenta de nuevo.'); });
   }
 
+  function removeMember(uid, email){
+    customConfirm('¿Quitar a "' + email + '" del equipo? Va a perder acceso a la app.', () => {
+      db.collection('usuarios').doc(uid).delete().then(() => {
+        cachedMembers = null;
+        loadMembers(() => { if(state.view === 'inicio') renderInicio(); });
+      }).catch(e => { console.warn('No se pudo quitar al miembro', e); showToast('No se pudo quitar. Intenta de nuevo.'); });
+    });
+  }
+
   let state = { view:'inicio', currentId:null, query:'', liveView:false };
   let toastTimer = null;
 
@@ -1046,6 +1055,7 @@
                   <span style="display:flex; gap:6px; flex:none;">
                     <button type="button" class="action-pill" data-approve="${m.uid}" data-rol="musico">Aprobar</button>
                     <button type="button" class="action-pill" data-approve="${m.uid}" data-rol="lider">Como líder</button>
+                    <button type="button" class="action-pill is-danger" data-remove="${m.uid}" data-email="${escapeHtml(m.email || '')}">Rechazar</button>
                   </span>
                 </li>
               `).join('')}
@@ -1055,9 +1065,12 @@
         <div class="mv-card">
           <h2>Miembros del equipo</h2>
           ${cachedMembers ? `
-            <ul class="mv-list">
+            <ul class="mv-list" style="gap:12px;">
               ${cachedMembers.filter(m => m.rol !== 'pendiente').map(m => `
-                <li>${m.rol === 'lider' ? '👑' : '👁'} <b>${escapeHtml(m.email || 'Sin correo')}</b> — ${m.rol === 'lider' ? 'Líder' : 'Músico'}</li>
+                <li style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding-left:0;">
+                  <span>${m.rol === 'lider' ? '👑' : '👁'} <b>${escapeHtml(m.email || 'Sin correo')}</b> — ${m.rol === 'lider' ? 'Líder' : 'Músico'}</span>
+                  ${isLider() && currentUser && m.uid !== currentUser.uid ? `<button type="button" class="action-pill is-danger" data-remove="${m.uid}" data-email="${escapeHtml(m.email || '')}" style="flex:none;">Quitar</button>` : ''}
+                </li>
               `).join('')}
             </ul>
           ` : `<p style="color:var(--ink-soft); font-size:14px; margin:0;">Cargando miembros...</p>`}
@@ -1069,6 +1082,9 @@
     wireRoleBadge(renderInicio);
     app.querySelectorAll('[data-approve]').forEach(btn => {
       btn.addEventListener('click', () => approveMember(btn.dataset.approve, btn.dataset.rol));
+    });
+    app.querySelectorAll('[data-remove]').forEach(btn => {
+      btn.addEventListener('click', () => removeMember(btn.dataset.remove, btn.dataset.email));
     });
     if(!cachedMembers) loadMembers(() => { if(state.view === 'inicio') renderInicio(); });
   }
