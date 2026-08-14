@@ -1049,7 +1049,14 @@
       ${isLider() ? `<div class="fab"><div class="fab-inner"><button id="btn-new" aria-label="Agregar cifrado">${ICONS.plus}</button></div></div>` : ''}
       ${pinModalHtml()}
     `;
-    app.querySelector('#search-input').addEventListener('input', e => { state.query = e.target.value; renderList(); });
+    app.querySelector('#search-input').addEventListener('input', e => {
+      state.query = e.target.value;
+      const cursorPos = e.target.selectionStart;
+      renderList();
+      const input = app.querySelector('#search-input');
+      input.focus();
+      input.setSelectionRange(cursorPos, cursorPos);
+    });
     if(isLider()) app.querySelector('#btn-new').addEventListener('click', () => go('form', null));
     if(isLider()) app.querySelector('#btn-share').addEventListener('click', () => go('share'));
     wireTabs();
