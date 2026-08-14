@@ -628,10 +628,17 @@
     if(!db || loadingMembers) return;
     loadingMembers = true;
     db.collection('usuarios').get().then(snap => {
-      cachedMembers = snap.docs.map(d => d.data()).sort((a,b) => (a.email||'').localeCompare(b.email||''));
+      cachedMembers = snap.docs.map(d => ({ uid: d.id, ...d.data() })).sort((a,b) => (a.email||'').localeCompare(b.email||''));
       loadingMembers = false;
       onDone(cachedMembers);
     }).catch(e => { console.warn('No se pudo cargar la lista de miembros', e); loadingMembers = false; });
+  }
+
+  function approveMember(uid, rol){
+    db.collection('usuarios').doc(uid).update({ rol }).then(() => {
+      cachedMembers = null;
+      loadMembers(() => { if(state.view === 'inicio') renderInicio(); });
+    }).catch(e => { console.warn('No se pudo aprobar al miembro', e); showToast('No se pudo aprobar. Intenta de nuevo.'); });
   }
 
   let state = { view:'inicio', currentId:null, query:'', liveView:false };
@@ -876,6 +883,7 @@
   function render(){
     if(currentUser === undefined){ renderAuthLoading(); return; }
     if(currentUser === null){ renderLogin(); return; }
+    if(userRole === 'pendiente'){ renderPendingApproval(); return; }
     if(state.view !== 'detail') app.classList.remove('live-mode');
     if(state.view === 'inicio') renderInicio();
     else if(state.view === 'list') renderList();
@@ -885,6 +893,25 @@
     else if(state.view === 'cultos') renderCultos();
     else if(state.view === 'culto-detail') renderCultoDetail();
     else if(state.view === 'culto-form') renderCultoForm();
+  }
+
+  function renderPendingApproval(){
+    app.innerHTML = `
+      <div class="auth-view">
+        <div class="auth-header">
+          <img class="auth-logo" src="${LOGO_DATA_URI}" alt="Logo" />
+          <p class="auth-header-title">Mis Cifrados</p>
+          <p class="auth-header-sub">Iglesia Asamblea de Dios Familia Unida</p>
+        </div>
+        <div class="auth-body" style="text-align:center;">
+          <h1 class="auth-heading">Cuenta pendiente de aprobación</h1>
+          <p class="auth-instruction">Tu cuenta (${escapeHtml(currentUser.email)}) fue creada correctamente, pero un líder del equipo todavía tiene que aprobarla antes de que puedas ver los cifrados.</p>
+          <p class="auth-instruction">Avísale a tu líder de alabanza para que te habilite desde la app.</p>
+          <button type="button" class="btn" id="btn-signout-pending" style="margin-top:10px;">Cerrar sesión</button>
+        </div>
+      </div>
+    `;
+    app.querySelector('#btn-signout-pending').addEventListener('click', () => firebase.auth().signOut());
   }
 
   function renderAuthLoading(){
@@ -1009,11 +1036,27 @@
             <li><b>Transformar vidas:</b> Contribuir a que los creyentes maduren y reflejen el carácter de Cristo a través del canto y la verdad de las Escrituras.</li>
           </ul>
         </div>
+        ${isLider() && cachedMembers && cachedMembers.some(m => m.rol === 'pendiente') ? `
+          <div class="mv-card">
+            <h2>Pendientes de aprobación</h2>
+            <ul class="mv-list" style="gap:14px;">
+              ${cachedMembers.filter(m => m.rol === 'pendiente').map(m => `
+                <li style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding-left:0;">
+                  <span>⏳ <b>${escapeHtml(m.email || 'Sin correo')}</b></span>
+                  <span style="display:flex; gap:6px; flex:none;">
+                    <button type="button" class="action-pill" data-approve="${m.uid}" data-rol="musico">Aprobar</button>
+                    <button type="button" class="action-pill" data-approve="${m.uid}" data-rol="lider">Como líder</button>
+                  </span>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        ` : ''}
         <div class="mv-card">
           <h2>Miembros del equipo</h2>
           ${cachedMembers ? `
             <ul class="mv-list">
-              ${cachedMembers.map(m => `
+              ${cachedMembers.filter(m => m.rol !== 'pendiente').map(m => `
                 <li>${m.rol === 'lider' ? '👑' : '👁'} <b>${escapeHtml(m.email || 'Sin correo')}</b> — ${m.rol === 'lider' ? 'Líder' : 'Músico'}</li>
               `).join('')}
             </ul>
@@ -1024,6 +1067,9 @@
     `;
     wireTabs();
     wireRoleBadge(renderInicio);
+    app.querySelectorAll('[data-approve]').forEach(btn => {
+      btn.addEventListener('click', () => approveMember(btn.dataset.approve, btn.dataset.rol));
+    });
     if(!cachedMembers) loadMembers(() => { if(state.view === 'inicio') renderInicio(); });
   }
 
@@ -1698,18 +1744,18 @@
     currentUser = user;
     db.collection('usuarios').doc(user.uid).get().then(snap => {
       if(snap.exists){
-        userRole = snap.data().rol === 'lider' ? 'lider' : 'musico';
+        const r = snap.data().rol;
+        userRole = (r === 'lider' || r === 'musico') ? r : 'pendiente';
       } else {
-        userRole = 'musico';
-        db.collection('usuarios').doc(user.uid).set({ email: user.email, rol: 'musico', creadoAt: Date.now() }).catch(()=>{});
+        userRole = 'pendiente';
+        db.collection('usuarios').doc(user.uid).set({ email: user.email, rol: 'pendiente', creadoAt: Date.now() }).catch(()=>{});
       }
       render();
-      initCloudSync();
+      if(userRole !== 'pendiente') initCloudSync();
     }).catch(e => {
       console.warn('No se pudo leer el rol de usuario', e);
-      userRole = 'musico';
+      userRole = 'pendiente';
       render();
-      initCloudSync();
     });
   }
 
