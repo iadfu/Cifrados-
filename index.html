@@ -744,21 +744,16 @@
   }
 
   function renderChordsOnly(cuerpo, semitones){
-    const paragraphs = [];
-    let current = [];
+    const rows = [];
     cuerpo.split('\n').forEach(line => {
-      if(line.trim() === ''){
-        if(current.length){ paragraphs.push(current); current = []; }
-        return;
-      }
+      if(line.trim() === '') return;
       const tokens = line.match(/\S+/g) || [];
       const allChords = tokens.length > 0 && tokens.every(isChordToken);
       if(!allChords) return;
-      tokens.forEach(t => current.push(transposeChordToken(t, semitones)));
+      rows.push(tokens.map(t => transposeChordToken(t, semitones)));
     });
-    if(current.length) paragraphs.push(current);
-    return paragraphs.map(p =>
-      '<span class="line chord-line">' + p.map(t => '<span class="chord">' + escapeHtml(t) + '</span>').join('  ') + '</span>'
+    return rows.map(tokens =>
+      '<span class="line chord-line">' + tokens.map(t => '<span class="chord">' + escapeHtml(t) + '</span>').join(' ') + '</span>'
     ).join('');
   }
 
