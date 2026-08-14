@@ -503,11 +503,11 @@
   const FLAT_TO_SHARP = {Db:'C#',Eb:'D#',Gb:'F#',Ab:'G#',Bb:'A#',Cb:'B',Fb:'E'};
   const ALLOWED_SUFFIX = /^[majindusg0-9#+\-]*$/i;
 
-  const SECTION_TYPES = ['Intro','Verso 1','Verso 2','Verso 3','Pre Coro','Coro','Coro 1','Coro 2','Puente','Final'];
-  const SECTION_ABBR = { 'Intro':'I', 'Verso 1':'V1', 'Verso 2':'V2', 'Verso 3':'V3', 'Pre Coro':'Pr', 'Coro':'C', 'Coro 1':'C1', 'Coro 2':'C2', 'Puente':'P', 'Final':'F' };
+  const SECTION_TYPES = ['Intro','Verso 1','Verso 2','Verso 3','Pre Coro','Coro','Coro 1','Coro 2','Puente','Interludio','Final'];
+  const SECTION_ABBR = { 'Intro':'I', 'Verso 1':'V1', 'Verso 2':'V2', 'Verso 3':'V3', 'Pre Coro':'Pr', 'Coro':'C', 'Coro 1':'C1', 'Coro 2':'C2', 'Puente':'P', 'Interludio':'It', 'Final':'F' };
   const SECTION_COLORS = {
     'Intro':'63,120,110', 'Verso 1':'90,101,163', 'Verso 2':'90,101,163', 'Verso 3':'90,101,163',
-    'Pre Coro':'184,134,46', 'Coro':'166,90,54', 'Coro 1':'166,90,54', 'Coro 2':'193,72,108', 'Puente':'63,122,82', 'Final':'107,114,128'
+    'Pre Coro':'184,134,46', 'Coro':'166,90,54', 'Coro 1':'166,90,54', 'Coro 2':'193,72,108', 'Puente':'63,122,82', 'Interludio':'107,90,163', 'Final':'107,114,128'
   };
   function sectionAbbr(tipo){ return SECTION_ABBR[tipo] || (tipo ? tipo.slice(0,2).toUpperCase() : '·'); }
   function sectionColor(tipo){ return SECTION_COLORS[tipo] || '107,114,128'; }
