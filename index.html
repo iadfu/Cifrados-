@@ -681,7 +681,7 @@
     });
   }
 
-  let state = { view:'inicio', currentId:null, query:'', liveView:false, viewOnly:false };
+  let state = { view:'inicio', currentId:null, query:'', liveView:false, viewOnly:false, forcedTranspose:0 };
   let toastTimer = null;
 
   function customConfirm(message, onConfirm){
@@ -893,7 +893,7 @@
     opts = opts || {};
     if((view === 'form' || view === 'share' || view === 'culto-form') && !isLider()) view = 'list';
     if(view !== 'detail' || id !== state.currentId) state.liveView = false;
-    state.view = view; state.currentId = id || null; state.viewOnly = !!opts.viewOnly; render(); window.scrollTo(0,0);
+    state.view = view; state.currentId = id || null; state.viewOnly = !!opts.viewOnly; state.forcedTranspose = opts.forcedTranspose || 0; render(); window.scrollTo(0,0);
   }
 
   function tabBarHtml(active){
@@ -1186,7 +1186,7 @@
   function renderDetail(){
     const song = songs.find(s => s.id === state.currentId);
     if(!song){ go('list'); return; }
-    const semis = song.transpose || 0;
+    const semis = state.viewOnly ? (state.forcedTranspose || 0) : (song.transpose || 0);
     const scale = song.fontScale || 1;
     const displayTono = transposeChordToken(song.tono || '-', semis);
     const secciones = song.secciones && song.secciones.length ? song.secciones : [{ id:'x', tipo:'', contenido:'' }];
@@ -1241,9 +1241,9 @@
         <div class="print-col">${secciones.slice(Math.ceil(secciones.length/2)).map(sec => sectionBoxHtmlChordsOnly(sec, semis, scale)).join('')}</div>
       </div>
       <div class="transpose-bar">
-        <button class="step-btn" id="btn-down" aria-label="Bajar semitono">−</button>
-        <div class="tono-display">Tono<b>${escapeHtml(displayTono)}</b></div>
-        <button class="step-btn" id="btn-up" aria-label="Subir semitono">+</button>
+        ${state.viewOnly ? '' : `<button class="step-btn" id="btn-down" aria-label="Bajar semitono">−</button>`}
+        <div class="tono-display">${state.viewOnly ? 'Tono para este culto' : 'Tono'}<b>${escapeHtml(displayTono)}</b></div>
+        ${state.viewOnly ? '' : `<button class="step-btn" id="btn-up" aria-label="Subir semitono">+</button>`}
         <div class="fontsize-toggle">
           <button id="btn-font-down" aria-label="Letra más chica">A−</button>
           <button id="btn-font-up" aria-label="Letra más grande">A+</button>
@@ -1294,8 +1294,10 @@
         });
       });
     }
-    app.querySelector('#btn-down').addEventListener('click', () => { song.transpose = (song.transpose||0) - 1; saveSongs(); renderDetail(); });
-    app.querySelector('#btn-up').addEventListener('click', () => { song.transpose = (song.transpose||0) + 1; saveSongs(); renderDetail(); });
+    if(!state.viewOnly){
+      app.querySelector('#btn-down').addEventListener('click', () => { song.transpose = (song.transpose||0) - 1; saveSongs(); renderDetail(); });
+      app.querySelector('#btn-up').addEventListener('click', () => { song.transpose = (song.transpose||0) + 1; saveSongs(); renderDetail(); });
+    }
     app.querySelector('#btn-font-down').addEventListener('click', () => { song.fontScale = Math.max(0.75, (song.fontScale||1) - 0.125); saveSongs(); renderDetail(); });
     app.querySelector('#btn-font-up').addEventListener('click', () => { song.fontScale = Math.min(2, (song.fontScale||1) + 0.125); saveSongs(); renderDetail(); });
     app.querySelectorAll('.sec-pill').forEach(btn => {
@@ -1628,7 +1630,7 @@
     `;
     app.querySelector('#btn-back').addEventListener('click', () => go('cultos'));
     app.querySelectorAll('[data-open]').forEach(btn => {
-      btn.addEventListener('click', () => go('detail', btn.dataset.open, {viewOnly:true}));
+      btn.addEventListener('click', () => go('detail', btn.dataset.open, {viewOnly:true, forcedTranspose: (culto.transposes && culto.transposes[btn.dataset.open]) || 0}));
     });
     if(isLider()){
       if(list.length) app.querySelector('#btn-mail-culto').addEventListener('click', () => sendRepertorioEmail(culto, list));
