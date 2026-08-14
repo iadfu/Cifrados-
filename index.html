@@ -681,7 +681,7 @@
     });
   }
 
-  let state = { view:'inicio', currentId:null, query:'', liveView:false };
+  let state = { view:'inicio', currentId:null, query:'', liveView:false, viewOnly:false };
   let toastTimer = null;
 
   function customConfirm(message, onConfirm){
@@ -889,10 +889,11 @@
     } catch(e){ return 'link externo'; }
   }
 
-  function go(view, id){
+  function go(view, id, opts){
+    opts = opts || {};
     if((view === 'form' || view === 'share' || view === 'culto-form') && !isLider()) view = 'list';
     if(view !== 'detail' || id !== state.currentId) state.liveView = false;
-    state.view = view; state.currentId = id || null; render(); window.scrollTo(0,0);
+    state.view = view; state.currentId = id || null; state.viewOnly = !!opts.viewOnly; render(); window.scrollTo(0,0);
   }
 
   function tabBarHtml(active){
@@ -1202,8 +1203,8 @@
         <div class="detail-actions">
           <button class="action-pill ${state.liveView ? 'is-live-active' : ''}" id="btn-live">${ICONS.live}<span>Vista en vivo</span></button>
           <button class="action-pill" id="btn-pdf">${ICONS.pdf}<span>PDF</span></button>
-          ${isLider() ? `<button class="action-pill" id="btn-edit">${ICONS.edit}<span>Editar</span></button>` : ''}
-          ${isLider() ? `<button class="action-pill is-danger" id="btn-delete">${ICONS.trash}<span>Eliminar</span></button>` : ''}
+          ${isLider() && !state.viewOnly ? `<button class="action-pill" id="btn-edit">${ICONS.edit}<span>Editar</span></button>` : ''}
+          ${isLider() && !state.viewOnly ? `<button class="action-pill is-danger" id="btn-delete">${ICONS.trash}<span>Eliminar</span></button>` : ''}
         </div>
       </div>
       ${song.link ? `
@@ -1283,7 +1284,7 @@
     app.querySelector('#btn-pdf-letra').addEventListener('click', () => printWithMode('letra'));
     app.querySelector('#btn-pdf-acordes').addEventListener('click', () => printWithMode('acordes'));
     app.querySelector('#btn-pdf-completo').addEventListener('click', () => printWithMode('completo'));
-    if(isLider()){
+    if(isLider() && !state.viewOnly){
       app.querySelector('#btn-edit').addEventListener('click', () => go('form', song.id));
       app.querySelector('#btn-delete').addEventListener('click', () => {
         customConfirm('¿Eliminar "' + song.titulo + '"? Esta acción no se puede deshacer.', () => {
@@ -1627,7 +1628,7 @@
     `;
     app.querySelector('#btn-back').addEventListener('click', () => go('cultos'));
     app.querySelectorAll('[data-open]').forEach(btn => {
-      btn.addEventListener('click', () => go('detail', btn.dataset.open));
+      btn.addEventListener('click', () => go('detail', btn.dataset.open, {viewOnly:true}));
     });
     if(isLider()){
       if(list.length) app.querySelector('#btn-mail-culto').addEventListener('click', () => sendRepertorioEmail(culto, list));
