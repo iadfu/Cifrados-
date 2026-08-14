@@ -408,6 +408,7 @@
 
   .print-header{ display:none; }
   @media print{
+    *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; color-adjust:exact; }
     body, #cifrados-app{ background:#fff !important; }
     .detail-header, .transpose-bar, .topbar, .fab, .toast, .modal-overlay, .pdf-dropdown, .pdf-backdrop, .ref-link-wrap{ display:none !important; }
     #cifrados-app{ max-width:none; color:#000; }
@@ -426,9 +427,10 @@
     .print-columns-acordes{ grid-template-columns:1fr 1fr; gap:22px; padding:8px 18px 18px; align-items:start; }
     #cifrados-app[data-print-mode="acordes"] .print-columns-acordes{ display:grid; }
     .print-col{ min-width:0; }
-    .sec-box{ border:1.3px solid #000; break-inside:avoid; }
+    .sec-box{ border:1.3px solid #000; border-left:3px solid var(--dot, #000); break-inside:avoid; }
     .sec-box-header{ border-bottom:1px solid #000; }
     .sec-box-header span{ color:#000; }
+    .sec-box-header .dot, .sec-pill .dot{ background:var(--dot) !important; }
     .chord-sheet{ color:#000; font-size:var(--print-font-size, 11.5px); line-height:1.55; padding:10px 14px; }
     .chord{ color:#000; font-weight:800; }
     #cifrados-app[data-print-mode="letra"] .chord-line{ display:none; }
