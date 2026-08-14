@@ -123,10 +123,10 @@
   .empty-state svg{ opacity:0.5; }
   .song-list{ display:flex; flex-direction:column; gap:12px; list-style:none; padding:0; margin:0; }
   @media (min-width:700px){
-    .song-list{ display:grid; grid-template-columns:repeat(2, 1fr); align-items:start; gap:14px; }
+    .song-list:not(.is-cifrados){ display:grid; grid-template-columns:repeat(2, 1fr); align-items:start; gap:14px; }
   }
   @media (min-width:1000px){
-    .song-list{ grid-template-columns:repeat(3, 1fr); }
+    .song-list:not(.is-cifrados){ grid-template-columns:repeat(3, 1fr); }
   }
   .song-card{
     background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius);
@@ -1031,7 +1031,7 @@
             <p>${songs.length === 0 ? 'Aún no tienes cifrados guardados.' : 'Sin resultados para tu búsqueda.'}</p>
           </div>
         ` : `
-          <ul class="song-list">
+          <ul class="song-list is-cifrados">
             ${filtered.map(s => `
               <li>
                 <button class="song-card" data-open="${s.id}">
