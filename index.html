@@ -429,7 +429,7 @@
     .sec-box{ border:1.3px solid #000; break-inside:avoid; }
     .sec-box-header{ border-bottom:1px solid #000; }
     .sec-box-header span{ color:#000; }
-    .chord-sheet{ color:#000; font-size:11.5px; line-height:1.55; padding:10px 14px; }
+    .chord-sheet{ color:#000; font-size:var(--print-font-size, 11.5px); line-height:1.55; padding:10px 14px; }
     .chord{ color:#000; font-weight:800; }
     #cifrados-app[data-print-mode="letra"] .chord-line{ display:none; }
   }
@@ -758,6 +758,31 @@
     return paragraphs.map(p =>
       '<span class="line chord-line">' + p.map(t => '<span class="chord">' + escapeHtml(t) + '</span>').join('  ') + '</span>'
     ).join('');
+  }
+
+  function maxLineChars(text){
+    let max = 0;
+    (text || '').split('\n').forEach(line => { if(line.length > max) max = line.length; });
+    return max;
+  }
+
+  function computePrintFontSize(song, mode, semis){
+    const BASE = 11.5, MIN = 7, SAFE_CHARS = 46;
+    let maxChars = 0;
+    (song.secciones || []).forEach(sec => {
+      const contenido = sec.contenido || '';
+      maxChars = Math.max(maxChars, maxLineChars(contenido));
+      if(mode === 'acordes' || mode === 'completo'){
+        const flowHtml = renderChordsOnly(contenido, semis);
+        const tmp = document.createElement('div');
+        tmp.innerHTML = flowHtml;
+        tmp.querySelectorAll('.line').forEach(line => {
+          maxChars = Math.max(maxChars, (line.textContent || '').length);
+        });
+      }
+    });
+    if(maxChars <= SAFE_CHARS) return BASE;
+    return Math.max(MIN, +(BASE * (SAFE_CHARS / maxChars)).toFixed(2));
   }
 
   function sectionBoxHtmlChordsOnly(sec, semis, scale){
@@ -1159,6 +1184,8 @@
     function printWithMode(mode){
       closePdfMenu();
       app.dataset.printMode = mode;
+      const fontSize = computePrintFontSize(song, mode, semis);
+      document.documentElement.style.setProperty('--print-font-size', fontSize + 'px');
       document.title = song.titulo.replace(/[\\/:*?"<>|]/g, '-');
       window.print();
     }
