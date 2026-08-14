@@ -681,7 +681,7 @@
     });
   }
 
-  let state = { view:'inicio', currentId:null, query:'', liveView:false, viewOnly:false, forcedTranspose:0 };
+  let state = { view:'inicio', currentId:null, query:'', liveView:false, viewOnly:false, forcedTranspose:0, returnView:null, returnId:null };
   let toastTimer = null;
 
   function customConfirm(message, onConfirm){
@@ -893,7 +893,13 @@
     opts = opts || {};
     if((view === 'form' || view === 'share' || view === 'culto-form') && !isLider()) view = 'list';
     if(view !== 'detail' || id !== state.currentId) state.liveView = false;
-    state.view = view; state.currentId = id || null; state.viewOnly = !!opts.viewOnly; state.forcedTranspose = opts.forcedTranspose || 0; render(); window.scrollTo(0,0);
+    if(view === 'detail' && id !== state.currentId){
+      const s = songs.find(x => x.id === id);
+      if(s) s.transpose = 0;
+    }
+    state.view = view; state.currentId = id || null; state.viewOnly = !!opts.viewOnly; state.forcedTranspose = opts.forcedTranspose || 0;
+    state.returnView = opts.returnView || null; state.returnId = opts.returnId || null;
+    render(); window.scrollTo(0,0);
   }
 
   function tabBarHtml(active){
@@ -1257,7 +1263,10 @@
       </div>
     `;
     app.classList.toggle('live-mode', state.liveView);
-    app.querySelector('#btn-back').addEventListener('click', () => go('list'));
+    app.querySelector('#btn-back').addEventListener('click', () => {
+      if(state.viewOnly && state.returnView) go(state.returnView, state.returnId);
+      else go('list');
+    });
     app.querySelector('#btn-live').addEventListener('click', () => { state.liveView = !state.liveView; renderDetail(); });
     const pdfBtn = app.querySelector('#btn-pdf');
     const pdfMenu = app.querySelector('#pdf-modal');
@@ -1295,8 +1304,8 @@
       });
     }
     if(!state.viewOnly){
-      app.querySelector('#btn-down').addEventListener('click', () => { song.transpose = (song.transpose||0) - 1; saveSongs(); renderDetail(); });
-      app.querySelector('#btn-up').addEventListener('click', () => { song.transpose = (song.transpose||0) + 1; saveSongs(); renderDetail(); });
+      app.querySelector('#btn-down').addEventListener('click', () => { song.transpose = (song.transpose||0) - 1; renderDetail(); });
+      app.querySelector('#btn-up').addEventListener('click', () => { song.transpose = (song.transpose||0) + 1; renderDetail(); });
     }
     app.querySelector('#btn-font-down').addEventListener('click', () => { song.fontScale = Math.max(0.75, (song.fontScale||1) - 0.125); saveSongs(); renderDetail(); });
     app.querySelector('#btn-font-up').addEventListener('click', () => { song.fontScale = Math.min(2, (song.fontScale||1) + 0.125); saveSongs(); renderDetail(); });
@@ -1630,7 +1639,7 @@
     `;
     app.querySelector('#btn-back').addEventListener('click', () => go('cultos'));
     app.querySelectorAll('[data-open]').forEach(btn => {
-      btn.addEventListener('click', () => go('detail', btn.dataset.open, {viewOnly:true, forcedTranspose: (culto.transposes && culto.transposes[btn.dataset.open]) || 0}));
+      btn.addEventListener('click', () => go('detail', btn.dataset.open, {viewOnly:true, forcedTranspose: (culto.transposes && culto.transposes[btn.dataset.open]) || 0, returnView:'culto-detail', returnId:culto.id}));
     });
     if(isLider()){
       if(list.length) app.querySelector('#btn-mail-culto').addEventListener('click', () => sendRepertorioEmail(culto, list));
