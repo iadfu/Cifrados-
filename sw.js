@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mis-cifrados-shell-v1';
+const CACHE_NAME = 'mis-cifrados-shell-v2';
 const APP_SHELL = [
   './',
   './index.html',
@@ -25,20 +25,37 @@ self.addEventListener('fetch', event => {
   const req = event.request;
   if(req.method !== 'GET') return;
 
-  const isShellRequest = APP_SHELL.includes(req.url) ||
+  const isHtmlShell = req.mode === 'navigate' ||
     req.url === self.registration.scope ||
     req.url.endsWith('/index.html');
 
-  if(!isShellRequest) return;
+  if(isHtmlShell){
+    // Network-first: siempre busca la versión más nueva. Si no hay internet, recién ahí usa la copia guardada.
+    event.respondWith(
+      fetch(req).then(res => {
+        if(res && res.ok){
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
+        }
+        return res;
+      }).catch(() =>
+        caches.open(CACHE_NAME).then(cache => cache.match(req).then(m => m || cache.match('./index.html')))
+      )
+    );
+    return;
+  }
 
-  event.respondWith(
-    caches.open(CACHE_NAME).then(async cache => {
-      const cached = await cache.match(req);
-      const networkFetch = fetch(req).then(res => {
+  const isFirebaseSdk = APP_SHELL.includes(req.url);
+  if(isFirebaseSdk){
+    // Estas URL están fijas a una versión exacta y nunca cambian de contenido: cache-first está bien.
+    event.respondWith(
+      caches.open(CACHE_NAME).then(async cache => {
+        const cached = await cache.match(req);
+        if(cached) return cached;
+        const res = await fetch(req);
         if(res && res.ok) cache.put(req, res.clone());
         return res;
-      }).catch(() => cached);
-      return cached || networkFetch;
-    })
-  );
+      })
+    );
+  }
 });
