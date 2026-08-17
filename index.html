@@ -339,11 +339,21 @@
   .sec-edit-move .icon-btn{ width:34px; height:34px; }
   .sec-edit-move .icon-btn:disabled{ opacity:0.3; }
   .sec-edit-move .icon-btn:disabled:hover{ background:transparent; }
+  .sec-contenido-wrap{ position:relative; display:block; max-width:100%; }
   .sec-contenido{
     width:100%; font-family:var(--font-mono); background:var(--bg); border:1px solid var(--border);
-    border-radius:8px; padding:10px; font-size:14px; min-height:90px; min-width:100%; line-height:1.5;
-    color:var(--ink); resize:both; display:block;
+    border-radius:8px; padding:10px 22px 22px 10px; font-size:14px; min-height:90px; line-height:1.5;
+    color:var(--ink); resize:none; display:block; box-sizing:border-box;
   }
+  .sec-contenido-grip{
+    position:absolute; right:3px; bottom:3px; width:20px; height:20px;
+    cursor:nwse-resize; touch-action:none;
+    background-image:repeating-linear-gradient(135deg, var(--ink-soft) 0 1.5px, transparent 1.5px 4.5px);
+    -webkit-mask-image:linear-gradient(135deg, transparent 45%, #000 45%);
+    mask-image:linear-gradient(135deg, transparent 45%, #000 45%);
+    opacity:0.6;
+  }
+  .sec-contenido-grip:hover{ opacity:1; }
 
   .share-view{ padding:16px 18px 40px; display:flex; flex-direction:column; gap:22px; }
   .share-card{
@@ -1435,7 +1445,10 @@
             <span>${(sec.veces||1) > 1 ? 'veces' : 'vez'}</span>
           </div>
           <input type="text" class="sec-nota-input" data-idx="${idx}" value="${escapeHtml(sec.nota || '')}" placeholder="Nota de matiz (opcional): entra guitarra, solo batería..." style="margin-bottom:8px; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:8px 10px; font-size:13px; color:var(--ink); font-family:var(--font-body); width:100%;" />
-          <textarea class="sec-contenido" data-idx="${idx}" placeholder="Acordes en su propia línea, letra debajo">${escapeHtml(sec.contenido)}</textarea>
+          <div class="sec-contenido-wrap">
+            <textarea class="sec-contenido" data-idx="${idx}" placeholder="Acordes en su propia línea, letra debajo">${escapeHtml(sec.contenido)}</textarea>
+            <div class="sec-contenido-grip" data-idx="${idx}" aria-hidden="true"></div>
+          </div>
         </div>
       `;
     }
@@ -1453,6 +1466,31 @@
       list.querySelectorAll('.sec-contenido').forEach(ta => ta.addEventListener('input', e => {
         formSecciones[+e.target.dataset.idx].contenido = e.target.value;
       }));
+      list.querySelectorAll('.sec-contenido-grip').forEach(grip => {
+        const wrap = grip.closest('.sec-contenido-wrap');
+        const ta = wrap.querySelector('.sec-contenido');
+        let startX, startY, startW, startH;
+        function onMove(e){
+          const dx = e.clientX - startX;
+          const dy = e.clientY - startY;
+          ta.style.width = Math.max(180, startW + dx) + 'px';
+          ta.style.height = Math.max(90, startH + dy) + 'px';
+        }
+        function onUp(e){
+          grip.releasePointerCapture(e.pointerId);
+          grip.removeEventListener('pointermove', onMove);
+          grip.removeEventListener('pointerup', onUp);
+        }
+        grip.addEventListener('pointerdown', e => {
+          e.preventDefault();
+          startX = e.clientX; startY = e.clientY;
+          const rect = ta.getBoundingClientRect();
+          startW = rect.width; startH = rect.height;
+          grip.setPointerCapture(e.pointerId);
+          grip.addEventListener('pointermove', onMove);
+          grip.addEventListener('pointerup', onUp);
+        });
+      });
       list.querySelectorAll('.sec-nota-input').forEach(inp => inp.addEventListener('input', e => {
         formSecciones[+e.target.dataset.idx].nota = e.target.value;
       }));
