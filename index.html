@@ -341,8 +341,8 @@
   .sec-edit-move .icon-btn:disabled:hover{ background:transparent; }
   .sec-contenido{
     width:100%; font-family:var(--font-mono); background:var(--bg); border:1px solid var(--border);
-    border-radius:8px; padding:10px; font-size:14px; min-height:90px; line-height:1.5;
-    color:var(--ink); resize:vertical; display:block;
+    border-radius:8px; padding:10px; font-size:14px; min-height:90px; min-width:100%; line-height:1.5;
+    color:var(--ink); resize:both; display:block;
   }
 
   .share-view{ padding:16px 18px 40px; display:flex; flex-direction:column; gap:22px; }
@@ -413,19 +413,71 @@
   #cifrados-app.proy-kiosk{
     max-width:none; width:100%; background:#0A0A0C; color:#F4F2ED;
     min-height:100vh; align-items:center; justify-content:center; margin:0;
+    position:relative; overflow:hidden;
   }
   .proy-kiosk-inner{
     width:100%; max-width:1400px; padding:48px 64px; box-sizing:border-box;
     text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    min-height:100vh; gap:0;
+    min-height:100vh; gap:0; position:relative; z-index:1;
   }
   .proy-song-title{ font-family:var(--font-display); font-size:20px; opacity:0.5; margin:0 0 30px; letter-spacing:0.02em; }
-  .proy-body{ font-family:var(--font-body); white-space:pre-wrap; margin:0; line-height:1.5; font-weight:600; }
+  .proy-body{ font-family:var(--font-body); white-space:pre-wrap; margin:0; line-height:1.5; font-weight:600; text-shadow:0 2px 18px rgba(0,0,0,0.5); }
+  .proy-body .line{ display:block; }
   .proy-body .chord{ color:#E8A33D; }
   .proy-audiencia .proy-body .chord-line{ display:none; }
   .proy-blackout{ background:#000; }
   .proy-empty{ opacity:0.4; font-size:18px; }
   .proy-active{ outline:2px solid var(--accent); outline-offset:-2px; }
+
+  #cifrados-app.proy-kiosk.proy-bg-negro{ background:#0A0A0C; }
+
+  #cifrados-app.proy-kiosk.proy-bg-degradado{
+    background:linear-gradient(120deg, #1B1D22, #3A2A12, #12202A, #241708, #1B1D22);
+    background-size:300% 300%;
+    animation:proyGradientMove 20s ease infinite;
+  }
+  @keyframes proyGradientMove{
+    0%{ background-position:0% 50%; }
+    50%{ background-position:100% 50%; }
+    100%{ background-position:0% 50%; }
+  }
+
+  #cifrados-app.proy-kiosk.proy-bg-destellos{ background:#0A0A0C; }
+  #cifrados-app.proy-kiosk.proy-bg-destellos::before{
+    content:''; position:absolute; inset:-15%; z-index:0;
+    background:
+      radial-gradient(circle at 18% 28%, rgba(232,163,61,0.24), transparent 38%),
+      radial-gradient(circle at 82% 72%, rgba(107,182,224,0.20), transparent 38%),
+      radial-gradient(circle at 50% 88%, rgba(232,163,61,0.14), transparent 34%),
+      radial-gradient(circle at 85% 15%, rgba(107,182,224,0.12), transparent 30%);
+    animation:proySparkleFloat 16s ease-in-out infinite;
+  }
+  @keyframes proySparkleFloat{
+    0%,100%{ transform:translate(0,0) scale(1); }
+    50%{ transform:translate(-2.5%,3%) scale(1.08); }
+  }
+
+  .proy-fondo-swatch{
+    width:84px; height:56px; border-radius:10px; border:1px solid var(--border);
+    display:flex; align-items:flex-end; justify-content:center; padding-bottom:6px;
+    position:relative; overflow:hidden;
+  }
+  .proy-fondo-swatch span{
+    font-size:10.5px; font-weight:700; color:#F4F2ED; text-shadow:0 1px 4px rgba(0,0,0,0.7); position:relative; z-index:1;
+  }
+  .proy-fondo-swatch.proy-bg-negro{ background:#0A0A0C; }
+  .proy-fondo-swatch.proy-bg-degradado{
+    background:linear-gradient(120deg, #1B1D22, #3A2A12, #12202A, #241708);
+    background-size:300% 300%; animation:proyGradientMove 20s ease infinite;
+  }
+  .proy-fondo-swatch.proy-bg-destellos{ background:#0A0A0C; }
+  .proy-fondo-swatch.proy-bg-destellos::before{
+    content:''; position:absolute; inset:-40%;
+    background:
+      radial-gradient(circle at 18% 28%, rgba(232,163,61,0.5), transparent 38%),
+      radial-gradient(circle at 82% 72%, rgba(107,182,224,0.4), transparent 38%);
+  }
+  .proy-fondo-swatch.proy-active{ outline:2px solid var(--accent); outline-offset:1px; }
 
   .print-header{ display:none; }
   @media print{
@@ -937,6 +989,7 @@
         <button type="button" class="tab-btn ${active==='inicio'?'active':''}" id="tab-inicio">Inicio</button>
         <button type="button" class="tab-btn ${active==='cifrados'?'active':''}" id="tab-cifrados">Cifrados</button>
         <button type="button" class="tab-btn ${active==='repertorio'?'active':''}" id="tab-repertorio">Repertorio</button>
+        <button type="button" class="tab-btn ${active==='proyeccion'?'active':''}" id="tab-proyeccion">Proyección</button>
       </div>
     `;
   }
@@ -944,6 +997,7 @@
     app.querySelector('#tab-inicio').addEventListener('click', () => go('inicio'));
     app.querySelector('#tab-cifrados').addEventListener('click', () => go('list'));
     app.querySelector('#tab-repertorio').addEventListener('click', () => go('cultos'));
+    app.querySelector('#tab-proyeccion').addEventListener('click', () => go('proyeccion'));
   }
 
   function pinModalHtml(){ return ''; }
@@ -978,6 +1032,7 @@
     else if(state.view === 'cultos') renderCultos();
     else if(state.view === 'culto-detail') renderCultoDetail();
     else if(state.view === 'culto-form') renderCultoForm();
+    else if(state.view === 'proyeccion') renderProyeccionHome();
     else if(state.view === 'proyeccion-control') renderProyeccionControl();
   }
 
@@ -1696,12 +1751,17 @@
 
   function proyChannelName(cultoId){ return 'cifraviva-proy-' + cultoId; }
   function proyStorageKey(cultoId){ return 'cifraviva-proy-state-' + cultoId; }
+  const PROY_FONDOS = [
+    { id:'negro', nombre:'Negro' },
+    { id:'degradado', nombre:'Degradado' },
+    { id:'destellos', nombre:'Destellos' }
+  ];
   function proyLoadState(cultoId){
     try{
       const raw = localStorage.getItem(proyStorageKey(cultoId));
-      if(raw) return JSON.parse(raw);
+      if(raw) return { songIndex:0, sectionIndex:0, blackout:false, fondo:'negro', ...JSON.parse(raw) };
     }catch(e){}
-    return { songIndex:0, sectionIndex:0, blackout:false };
+    return { songIndex:0, sectionIndex:0, blackout:false, fondo:'negro' };
   }
   function proySaveState(cultoId, st){
     try{ localStorage.setItem(proyStorageKey(cultoId), JSON.stringify(st)); }catch(e){}
@@ -1711,6 +1771,46 @@
     const BASE = 46, MIN = 22, SAFE_LINES = 8;
     if(lines <= SAFE_LINES) return BASE;
     return Math.max(MIN, Math.round(BASE * (SAFE_LINES / lines)));
+  }
+
+  function renderProyeccionHome(){
+    const sorted = [...cultos].sort((a,b) => (a.fecha+ (a.hora||'')).localeCompare(b.fecha + (b.hora||'')));
+    app.innerHTML = `
+      <div class="topbar">
+        <div class="topbar-row">
+          <h1 class="app-title">Proyección</h1>
+          <button class="role-badge ${isLider() ? 'is-lider' : ''}" id="btn-role">${isLider() ? '👑 Líder' : '👁 Músico'}</button>
+        </div>
+        ${tabBarHtml('proyeccion')}
+      </div>
+      <main>
+        ${sorted.length === 0 ? `
+          <div class="empty-state">
+            ${ICONS.proyector}
+            <p>Aún no hay repertorios para proyectar. Créalos primero en Repertorio.</p>
+          </div>
+        ` : `
+          <ul class="song-list">
+            ${sorted.map(c => `
+              <li>
+                <button class="song-card" data-open-culto="${c.id}" ${c.songIds.length === 0 ? 'disabled' : ''}>
+                  <div class="song-card-info">
+                    <p class="song-card-title">${escapeHtml(c.nombre || 'Culto')}</p>
+                    <p class="song-card-artist">${escapeHtml(formatFecha(c.fecha))}${c.hora ? ' · ' + escapeHtml(formatHora(c.hora)) : ''}${c.songIds.length === 0 ? ' · sin canciones' : ''}</p>
+                  </div>
+                  <span class="tono-badge">${c.songIds.length}</span>
+                </button>
+              </li>
+            `).join('')}
+          </ul>
+        `}
+      </main>
+    `;
+    app.querySelectorAll('[data-open-culto]:not([disabled])').forEach(btn => {
+      btn.addEventListener('click', () => go('proyeccion-control', btn.dataset.openCulto));
+    });
+    wireTabs();
+    wireRoleBadge(renderProyeccionHome);
   }
 
   function renderProyeccionControl(){
@@ -1770,9 +1870,13 @@
       }
     }
     function toggleBlackout(){ proy = { ...proy, blackout: !proy.blackout }; broadcast(); }
+    function setFondo(id){ proy = { ...proy, fondo: id }; broadcast(); }
     function openWindow(mode){
       const url = location.origin + location.pathname + '#proy-' + mode + '-' + culto.id;
-      window.open(url, 'cifraviva_' + mode + '_' + culto.id);
+      const w = Math.round((screen.availWidth || 1280) * 0.9);
+      const h = Math.round((screen.availHeight || 720) * 0.9);
+      const features = `width=${w},height=${h},menubar=no,toolbar=no,location=no,status=no,resizable=yes`;
+      window.open(url, 'cifraviva_' + mode + '_' + culto.id, features);
     }
 
     function paint(){
@@ -1791,6 +1895,16 @@
             <button type="button" class="btn" id="btn-open-audiencia">${ICONS.proyector} Vista Audiencia</button>
             <button type="button" class="btn" id="btn-open-musicos">${ICONS.proyector} Vista Músicos</button>
             <button type="button" class="btn ${proy.blackout ? 'btn-danger' : ''}" id="btn-blackout">${proy.blackout ? 'Quitar pantalla negra' : 'Pantalla en negro'}</button>
+          </div>
+          <div>
+            <p style="font-weight:700; margin:0 0 10px; font-size:16px;">Fondo</p>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              ${PROY_FONDOS.map(f => `
+                <button type="button" class="proy-fondo-swatch proy-bg-${f.id} ${proy.fondo === f.id ? 'proy-active' : ''}" data-fondo="${f.id}">
+                  <span>${escapeHtml(f.nombre)}</span>
+                </button>
+              `).join('')}
+            </div>
           </div>
           <div>
             <p style="font-weight:700; margin:0 0 10px; font-size:16px;">${song ? escapeHtml(song.titulo) : ''}</p>
@@ -1824,6 +1938,7 @@
       app.querySelector('#btn-open-audiencia').addEventListener('click', () => openWindow('audiencia'));
       app.querySelector('#btn-open-musicos').addEventListener('click', () => openWindow('musicos'));
       app.querySelector('#btn-blackout').addEventListener('click', toggleBlackout);
+      app.querySelectorAll('[data-fondo]').forEach(btn => btn.addEventListener('click', () => setFondo(btn.dataset.fondo)));
       app.querySelector('#btn-prev').addEventListener('click', prevSection);
       app.querySelector('#btn-next').addEventListener('click', nextSection);
       app.querySelectorAll('[data-sec]').forEach(btn => btn.addEventListener('click', () => goToSection(+btn.dataset.sec)));
@@ -1843,6 +1958,8 @@
       const culto = cultos.find(c => c.id === cultoId);
       const list = culto ? culto.songIds.map(id => songs.find(s => s.id === id)).filter(Boolean) : [];
       const proy = proyLoadState(cultoId);
+      PROY_FONDOS.forEach(f => app.classList.remove('proy-bg-' + f.id));
+      app.classList.add('proy-bg-' + (proy.fondo || 'negro'));
       if(!culto || !list.length){
         app.innerHTML = `<div class="proy-kiosk-inner"><p class="proy-empty">Repertorio sin canciones.</p></div>`;
         return;
