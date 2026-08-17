@@ -431,7 +431,14 @@
     min-height:100vh; gap:0; position:relative; z-index:1;
   }
   .proy-song-title{ font-family:var(--font-display); font-size:20px; opacity:0.5; margin:0 0 30px; letter-spacing:0.02em; }
-  .proy-body{ font-family:var(--font-mono); white-space:pre-wrap; margin:0; line-height:1.5; font-weight:600; text-shadow:0 2px 18px rgba(0,0,0,0.5); }
+  .proy-body{
+    font-family:var(--font-mono); white-space:pre-wrap; margin:0; line-height:1.5; font-weight:600;
+    text-shadow:0 2px 18px rgba(0,0,0,0.5);
+    font-size:clamp(16px, calc(4.6vw * var(--proy-scale, 1)), 88px);
+  }
+  @media (min-aspect-ratio: 3/2){
+    .proy-body{ font-size:clamp(16px, calc(7vh * var(--proy-scale, 1)), 88px); }
+  }
   .proy-body .line{ display:block; }
   .proy-body .chord{ color:#E8A33D; }
   .proy-audiencia .proy-body .chord-line{ display:none; }
@@ -466,6 +473,43 @@
     0%,100%{ transform:translate(0,0) scale(1); }
     50%{ transform:translate(-2.5%,3%) scale(1.08); }
   }
+
+  #cifrados-app.proy-kiosk.proy-bg-aurora, .proy-fondo-swatch.proy-bg-aurora{
+    background:linear-gradient(120deg, #1B1D22, #2E1B3A, #123A34, #241708, #1B1D22);
+    background-size:300% 300%; animation:proyGradientMove 22s ease infinite;
+  }
+  #cifrados-app.proy-kiosk.proy-bg-oceano, .proy-fondo-swatch.proy-bg-oceano{
+    background:linear-gradient(120deg, #081826, #0F2E3E, #123A4A, #0A2230, #081826);
+    background-size:300% 300%; animation:proyGradientMove 20s ease infinite;
+  }
+  #cifrados-app.proy-kiosk.proy-bg-vinotinto, .proy-fondo-swatch.proy-bg-vinotinto{
+    background:linear-gradient(120deg, #1B0F12, #3A1420, #24070E, #1B0F12);
+    background-size:300% 300%; animation:proyGradientMove 20s ease infinite;
+  }
+  #cifrados-app.proy-kiosk.proy-bg-carbon, .proy-fondo-swatch.proy-bg-carbon{
+    background:linear-gradient(120deg, #131315, #202023, #17171A, #131315);
+    background-size:300% 300%; animation:proyGradientMove 26s ease infinite;
+  }
+  #cifrados-app.proy-kiosk.proy-bg-vineta, .proy-fondo-swatch.proy-bg-vineta{
+    background:radial-gradient(circle at 50% 42%, #2A2115 0%, #171310 55%, #0A0A0C 100%);
+  }
+
+  #cifrados-app.proy-kiosk.proy-bg-estrellado, .proy-fondo-swatch.proy-bg-estrellado{ background:#080810; }
+  #cifrados-app.proy-kiosk.proy-bg-estrellado::before, .proy-fondo-swatch.proy-bg-estrellado::before{
+    content:''; position:absolute; inset:0; z-index:0;
+    background-image:
+      radial-gradient(1.5px 1.5px at 12% 22%, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 28% 68%, #fff, transparent),
+      radial-gradient(1px 1px at 42% 15%, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 58% 45%, #fff, transparent),
+      radial-gradient(1px 1px at 73% 78%, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 85% 30%, #fff, transparent),
+      radial-gradient(1px 1px at 93% 60%, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 20% 90%, #fff, transparent),
+      radial-gradient(1px 1px at 65% 10%, #fff, transparent);
+    opacity:0.7; animation:proyTwinkle 4s ease-in-out infinite;
+  }
+  @keyframes proyTwinkle{ 0%,100%{ opacity:0.5; } 50%{ opacity:0.95; } }
 
   .proy-fondo-swatch{
     width:84px; height:56px; border-radius:10px; border:1px solid var(--border);
@@ -892,6 +936,15 @@
     return rows.map(tokens =>
       '<span class="line chord-line">' + tokens.map(t => '<span class="chord">' + escapeHtml(t) + '</span>').join(' ') + '</span>'
     ).join('');
+  }
+
+  function extractLyricsOnly(cuerpo){
+    return (cuerpo || '').split('\n').filter(line => {
+      if(line.trim() === '') return true;
+      const tokens = line.match(/\S+/g) || [];
+      const allChords = tokens.length > 0 && tokens.every(isChordToken);
+      return !allChords;
+    }).join('\n');
   }
 
   function maxLineChars(text){
@@ -1792,23 +1845,51 @@
   const PROY_FONDOS = [
     { id:'negro', nombre:'Negro' },
     { id:'degradado', nombre:'Degradado' },
-    { id:'destellos', nombre:'Destellos' }
+    { id:'destellos', nombre:'Destellos' },
+    { id:'aurora', nombre:'Aurora' },
+    { id:'oceano', nombre:'Océano' },
+    { id:'vinotinto', nombre:'Vino tinto' },
+    { id:'carbon', nombre:'Carbón' },
+    { id:'estrellado', nombre:'Estrellado' },
+    { id:'vineta', nombre:'Viñeta' }
   ];
+  const PROY_DEFAULT_STATE = { songIndex:0, sectionIndex:0, blackout:false, fondoAudiencia:'negro', fondoMusicos:'negro' };
   function proyLoadState(cultoId){
     try{
       const raw = localStorage.getItem(proyStorageKey(cultoId));
-      if(raw) return { songIndex:0, sectionIndex:0, blackout:false, fondo:'negro', ...JSON.parse(raw) };
+      if(raw) return { ...PROY_DEFAULT_STATE, ...JSON.parse(raw) };
     }catch(e){}
-    return { songIndex:0, sectionIndex:0, blackout:false, fondo:'negro' };
+    return { ...PROY_DEFAULT_STATE };
   }
   function proySaveState(cultoId, st){
     try{ localStorage.setItem(proyStorageKey(cultoId), JSON.stringify(st)); }catch(e){}
   }
-  function computeProyFontSize(cuerpo){
+  function letraOverrideKey(cultoId, songId, secId){ return 'cifraviva-letra-' + cultoId + '-' + songId + '-' + secId; }
+  function getLetraOverride(culto, song, sec){
+    if(!culto || !song || !sec) return null;
+    try{
+      const raw = localStorage.getItem(letraOverrideKey(culto.id, song.id, sec.id));
+      if(raw !== null) return raw;
+    }catch(e){}
+    const stored = culto.letrasEditadas && culto.letrasEditadas[song.id + '::' + sec.id];
+    return (stored !== undefined) ? stored : null;
+  }
+  function setLetraOverride(culto, song, sec, texto){
+    culto.letrasEditadas = culto.letrasEditadas || {};
+    culto.letrasEditadas[song.id + '::' + sec.id] = texto;
+    saveCultos();
+    try{ localStorage.setItem(letraOverrideKey(culto.id, song.id, sec.id), texto); }catch(e){}
+  }
+  function clearLetraOverride(culto, song, sec){
+    if(culto.letrasEditadas) delete culto.letrasEditadas[song.id + '::' + sec.id];
+    saveCultos();
+    try{ localStorage.removeItem(letraOverrideKey(culto.id, song.id, sec.id)); }catch(e){}
+  }
+  function computeProyFontScale(cuerpo){
     const lines = (cuerpo || '').split('\n').filter(l => l.trim() !== '').length;
-    const BASE = 46, MIN = 22, SAFE_LINES = 8;
-    if(lines <= SAFE_LINES) return BASE;
-    return Math.max(MIN, Math.round(BASE * (SAFE_LINES / lines)));
+    const SAFE_LINES = 8;
+    if(lines <= SAFE_LINES) return 1;
+    return Math.max(0.42, SAFE_LINES / lines);
   }
 
   function renderProyeccionHome(){
@@ -1908,7 +1989,10 @@
       }
     }
     function toggleBlackout(){ proy = { ...proy, blackout: !proy.blackout }; broadcast(); }
-    function setFondo(id){ proy = { ...proy, fondo: id }; broadcast(); }
+    function setFondo(target, id){
+      proy = { ...proy, [target === 'audiencia' ? 'fondoAudiencia' : 'fondoMusicos']: id };
+      broadcast();
+    }
     function openWindow(mode){
       const url = location.origin + location.pathname + '#proy-' + mode + '-' + culto.id;
       const w = Math.round((screen.availWidth || 1280) * 0.9);
@@ -1935,10 +2019,20 @@
             <button type="button" class="btn ${proy.blackout ? 'btn-danger' : ''}" id="btn-blackout">${proy.blackout ? 'Quitar pantalla negra' : 'Pantalla en negro'}</button>
           </div>
           <div>
-            <p style="font-weight:700; margin:0 0 10px; font-size:16px;">Fondo</p>
+            <p style="font-weight:700; margin:0 0 10px; font-size:16px;">Fondo — Audiencia</p>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
               ${PROY_FONDOS.map(f => `
-                <button type="button" class="proy-fondo-swatch proy-bg-${f.id} ${proy.fondo === f.id ? 'proy-active' : ''}" data-fondo="${f.id}">
+                <button type="button" class="proy-fondo-swatch proy-bg-${f.id} ${proy.fondoAudiencia === f.id ? 'proy-active' : ''}" data-fondo-audiencia="${f.id}">
+                  <span>${escapeHtml(f.nombre)}</span>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+          <div>
+            <p style="font-weight:700; margin:0 0 10px; font-size:16px;">Fondo — Músicos</p>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              ${PROY_FONDOS.map(f => `
+                <button type="button" class="proy-fondo-swatch proy-bg-${f.id} ${proy.fondoMusicos === f.id ? 'proy-active' : ''}" data-fondo-musicos="${f.id}">
                   <span>${escapeHtml(f.nombre)}</span>
                 </button>
               `).join('')}
@@ -1958,6 +2052,25 @@
             <button type="button" class="btn" id="btn-prev">◀ Anterior</button>
             <button type="button" class="btn" id="btn-next">Siguiente ▶</button>
           </div>
+          ${(() => {
+            const curSec = secs[proy.sectionIndex];
+            if(!curSec) return '';
+            const override = getLetraOverride(culto, song, curSec);
+            const letraTexto = override !== null ? override : extractLyricsOnly(curSec.contenido);
+            return `
+              <div>
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                  <p style="font-weight:700; margin:0; font-size:16px;">Letra para audiencia — ${escapeHtml(sectionLabel(curSec))}</p>
+                  ${override !== null ? '<span class="opt-tag">editada</span>' : ''}
+                </div>
+                <textarea id="letra-audiencia-edit" class="sec-contenido" style="min-height:110px;">${escapeHtml(letraTexto)}</textarea>
+                <div style="display:flex; gap:8px; margin-top:10px;">
+                  <button type="button" class="btn" id="btn-letra-guardar">Guardar</button>
+                  ${override !== null ? '<button type="button" class="btn" id="btn-letra-restaurar">Restaurar original</button>' : ''}
+                </div>
+              </div>
+            `;
+          })()}
           <ul class="song-list">
             ${list.map((s,i) => `
               <li>
@@ -1976,11 +2089,33 @@
       app.querySelector('#btn-open-audiencia').addEventListener('click', () => openWindow('audiencia'));
       app.querySelector('#btn-open-musicos').addEventListener('click', () => openWindow('musicos'));
       app.querySelector('#btn-blackout').addEventListener('click', toggleBlackout);
-      app.querySelectorAll('[data-fondo]').forEach(btn => btn.addEventListener('click', () => setFondo(btn.dataset.fondo)));
+      app.querySelectorAll('[data-fondo-audiencia]').forEach(btn => btn.addEventListener('click', () => setFondo('audiencia', btn.dataset.fondoAudiencia)));
+      app.querySelectorAll('[data-fondo-musicos]').forEach(btn => btn.addEventListener('click', () => setFondo('musicos', btn.dataset.fondoMusicos)));
       app.querySelector('#btn-prev').addEventListener('click', prevSection);
       app.querySelector('#btn-next').addEventListener('click', nextSection);
       app.querySelectorAll('[data-sec]').forEach(btn => btn.addEventListener('click', () => goToSection(+btn.dataset.sec)));
       app.querySelectorAll('[data-song]').forEach(btn => btn.addEventListener('click', () => goToSong(+btn.dataset.song)));
+      const letraTa = app.querySelector('#letra-audiencia-edit');
+      if(letraTa){
+        const btnGuardar = app.querySelector('#btn-letra-guardar');
+        if(btnGuardar) btnGuardar.addEventListener('click', () => {
+          const curSec = currentSecciones()[proy.sectionIndex];
+          if(!curSec) return;
+          setLetraOverride(culto, song, curSec, letraTa.value);
+          channel.postMessage(proy);
+          showToast('Letra guardada para la audiencia');
+          paint();
+        });
+        const btnRestaurar = app.querySelector('#btn-letra-restaurar');
+        if(btnRestaurar) btnRestaurar.addEventListener('click', () => {
+          const curSec = currentSecciones()[proy.sectionIndex];
+          if(!curSec) return;
+          clearLetraOverride(culto, song, curSec);
+          channel.postMessage(proy);
+          showToast('Restaurado el original');
+          paint();
+        });
+      }
     }
     proySaveState(culto.id, proy);
     paint();
@@ -1996,8 +2131,9 @@
       const culto = cultos.find(c => c.id === cultoId);
       const list = culto ? culto.songIds.map(id => songs.find(s => s.id === id)).filter(Boolean) : [];
       const proy = proyLoadState(cultoId);
+      const fondoActual = mode === 'audiencia' ? proy.fondoAudiencia : proy.fondoMusicos;
       PROY_FONDOS.forEach(f => app.classList.remove('proy-bg-' + f.id));
-      app.classList.add('proy-bg-' + (proy.fondo || 'negro'));
+      app.classList.add('proy-bg-' + (fondoActual || 'negro'));
       if(!culto || !list.length){
         app.innerHTML = `<div class="proy-kiosk-inner"><p class="proy-empty">Repertorio sin canciones.</p></div>`;
         return;
@@ -2012,12 +2148,16 @@
       const secs = (song.secciones && song.secciones.length) ? song.secciones : [];
       const secIdx = Math.min(Math.max(proy.sectionIndex, 0), Math.max(0, secs.length - 1));
       const sec = secs[secIdx];
-      const bodyHtml = sec ? renderCuerpo(sec.contenido || '', semis) : '';
-      const fontSize = computeProyFontSize(sec ? sec.contenido : '');
+      const override = mode === 'audiencia' ? getLetraOverride(culto, song, sec) : null;
+      const contenidoParaEscala = override !== null ? override : (sec ? sec.contenido : '');
+      const bodyHtml = override !== null
+        ? (override.split('\n').map(l => l.trim() === '' ? '<span class="line lyric-line"></span>' : '<span class="line lyric-line">' + escapeHtml(l) + '</span>').join(''))
+        : (sec ? renderCuerpo(sec.contenido || '', semis) : '');
+      const fontScale = computeProyFontScale(contenidoParaEscala);
       app.innerHTML = `
         <div class="proy-kiosk-inner">
           <div class="proy-song-title">${escapeHtml(song.titulo)}</div>
-          <pre class="proy-body" style="font-size:${fontSize}px;">${bodyHtml || '<span class="proy-empty">— sin contenido —</span>'}</pre>
+          <pre class="proy-body" style="--proy-scale:${fontScale};">${bodyHtml || '<span class="proy-empty">— sin contenido —</span>'}</pre>
         </div>
       `;
     }
