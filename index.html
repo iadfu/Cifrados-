@@ -431,24 +431,37 @@
     min-height:100vh; gap:0; position:relative; z-index:1;
   }
   .proy-song-title{ font-family:var(--font-display); font-size:20px; opacity:0.5; margin:0 0 30px; letter-spacing:0.02em; }
+  .proy-meta-badge{
+    position:absolute; top:18px; right:22px; z-index:2;
+    display:flex; gap:14px; font-family:var(--font-body); font-size:15px; font-weight:700;
+    color:#F4F2ED; opacity:0.75; text-shadow:0 2px 10px rgba(0,0,0,0.6);
+  }
+  .proy-meta-badge span b{ color:#E8A33D; font-weight:800; }
   .proy-body{
-    font-family:var(--font-mono); white-space:pre-wrap; margin:0; line-height:1.5; font-weight:600;
+    white-space:pre-wrap; margin:0; line-height:1.5; font-weight:600;
     text-shadow:0 2px 18px rgba(0,0,0,0.5);
     font-size:clamp(16px, calc(4.6vw * var(--proy-scale, 1)), 88px);
   }
   @media (min-aspect-ratio: 3/2){
     .proy-body{ font-size:clamp(16px, calc(7vh * var(--proy-scale, 1)), 88px); }
   }
+  .proy-musicos .proy-body{ font-family:var(--font-mono); }
+  .proy-audiencia .proy-body{
+    font-family:var(--font-body); font-weight:800; line-height:1.45; letter-spacing:0.01em;
+    text-transform:none;
+  }
   .proy-body .line{ display:block; }
+  .proy-audiencia .proy-body .line{ margin-bottom:0.35em; }
+  .proy-audiencia .proy-body .line:last-child{ margin-bottom:0; }
   .proy-body .chord{ color:#E8A33D; }
   .proy-audiencia .proy-body .chord-line{ display:none; }
   .proy-blackout{ background:#000; }
   .proy-empty{ opacity:0.4; font-size:18px; }
   .proy-active{ outline:2px solid var(--accent); outline-offset:-2px; }
 
-  #cifrados-app.proy-kiosk.proy-bg-negro{ background:#0A0A0C; }
+  #cifrados-app.proy-kiosk.proy-bg-negro, .proy-fondo-swatch.proy-bg-negro, .proy-preview.proy-bg-negro{ background:#0A0A0C; }
 
-  #cifrados-app.proy-kiosk.proy-bg-degradado{
+  #cifrados-app.proy-kiosk.proy-bg-degradado, .proy-fondo-swatch.proy-bg-degradado, .proy-preview.proy-bg-degradado{
     background:linear-gradient(120deg, #1B1D22, #3A2A12, #12202A, #241708, #1B1D22);
     background-size:300% 300%;
     animation:proyGradientMove 20s ease infinite;
@@ -459,8 +472,8 @@
     100%{ background-position:0% 50%; }
   }
 
-  #cifrados-app.proy-kiosk.proy-bg-destellos{ background:#0A0A0C; }
-  #cifrados-app.proy-kiosk.proy-bg-destellos::before{
+  #cifrados-app.proy-kiosk.proy-bg-destellos, .proy-fondo-swatch.proy-bg-destellos, .proy-preview.proy-bg-destellos{ background:#0A0A0C; }
+  #cifrados-app.proy-kiosk.proy-bg-destellos::before, .proy-fondo-swatch.proy-bg-destellos::before, .proy-preview.proy-bg-destellos::before{
     content:''; position:absolute; inset:-15%; z-index:0;
     background:
       radial-gradient(circle at 18% 28%, rgba(232,163,61,0.24), transparent 38%),
@@ -474,28 +487,28 @@
     50%{ transform:translate(-2.5%,3%) scale(1.08); }
   }
 
-  #cifrados-app.proy-kiosk.proy-bg-aurora, .proy-fondo-swatch.proy-bg-aurora{
+  #cifrados-app.proy-kiosk.proy-bg-aurora, .proy-fondo-swatch.proy-bg-aurora, .proy-preview.proy-bg-aurora{
     background:linear-gradient(120deg, #1B1D22, #2E1B3A, #123A34, #241708, #1B1D22);
     background-size:300% 300%; animation:proyGradientMove 22s ease infinite;
   }
-  #cifrados-app.proy-kiosk.proy-bg-oceano, .proy-fondo-swatch.proy-bg-oceano{
+  #cifrados-app.proy-kiosk.proy-bg-oceano, .proy-fondo-swatch.proy-bg-oceano, .proy-preview.proy-bg-oceano{
     background:linear-gradient(120deg, #081826, #0F2E3E, #123A4A, #0A2230, #081826);
     background-size:300% 300%; animation:proyGradientMove 20s ease infinite;
   }
-  #cifrados-app.proy-kiosk.proy-bg-vinotinto, .proy-fondo-swatch.proy-bg-vinotinto{
+  #cifrados-app.proy-kiosk.proy-bg-vinotinto, .proy-fondo-swatch.proy-bg-vinotinto, .proy-preview.proy-bg-vinotinto{
     background:linear-gradient(120deg, #1B0F12, #3A1420, #24070E, #1B0F12);
     background-size:300% 300%; animation:proyGradientMove 20s ease infinite;
   }
-  #cifrados-app.proy-kiosk.proy-bg-carbon, .proy-fondo-swatch.proy-bg-carbon{
+  #cifrados-app.proy-kiosk.proy-bg-carbon, .proy-fondo-swatch.proy-bg-carbon, .proy-preview.proy-bg-carbon{
     background:linear-gradient(120deg, #131315, #202023, #17171A, #131315);
     background-size:300% 300%; animation:proyGradientMove 26s ease infinite;
   }
-  #cifrados-app.proy-kiosk.proy-bg-vineta, .proy-fondo-swatch.proy-bg-vineta{
+  #cifrados-app.proy-kiosk.proy-bg-vineta, .proy-fondo-swatch.proy-bg-vineta, .proy-preview.proy-bg-vineta{
     background:radial-gradient(circle at 50% 42%, #2A2115 0%, #171310 55%, #0A0A0C 100%);
   }
 
-  #cifrados-app.proy-kiosk.proy-bg-estrellado, .proy-fondo-swatch.proy-bg-estrellado{ background:#080810; }
-  #cifrados-app.proy-kiosk.proy-bg-estrellado::before, .proy-fondo-swatch.proy-bg-estrellado::before{
+  #cifrados-app.proy-kiosk.proy-bg-estrellado, .proy-fondo-swatch.proy-bg-estrellado, .proy-preview.proy-bg-estrellado{ background:#080810; }
+  #cifrados-app.proy-kiosk.proy-bg-estrellado::before, .proy-fondo-swatch.proy-bg-estrellado::before, .proy-preview.proy-bg-estrellado::before{
     content:''; position:absolute; inset:0; z-index:0;
     background-image:
       radial-gradient(1.5px 1.5px at 12% 22%, #fff, transparent),
@@ -510,6 +523,23 @@
     opacity:0.7; animation:proyTwinkle 4s ease-in-out infinite;
   }
   @keyframes proyTwinkle{ 0%,100%{ opacity:0.5; } 50%{ opacity:0.95; } }
+
+  .proy-preview{
+    position:relative; overflow:hidden; border-radius:10px; aspect-ratio:16/9;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:8px; color:#F4F2ED; text-align:center; border:1px solid var(--line, rgba(0,0,0,0.1));
+  }
+  .proy-preview-label{ font-size:11.5px; font-weight:700; color:var(--ink-soft); margin:0 0 6px; text-transform:uppercase; letter-spacing:0.04em; }
+  .proy-preview-title{ font-size:9px; opacity:0.55; margin-bottom:4px; position:relative; z-index:1; }
+  .proy-preview-body{
+    font-family:var(--font-mono); font-size:7px; line-height:1.35; white-space:pre-wrap;
+    position:relative; z-index:1; max-height:100%; overflow:hidden;
+  }
+  .proy-preview-body .line{ display:block; }
+  .proy-preview-body .chord{ color:#E8A33D; }
+  .proy-preview.mode-audiencia .proy-preview-body .chord-line{ display:none; }
+  .proy-preview-empty{ font-size:10.5px; opacity:0.5; position:relative; z-index:1; }
+  .proy-preview-blackout{ position:absolute; inset:0; background:#000; }
 
   .proy-fondo-swatch{
     width:84px; height:56px; border-radius:10px; border:1px solid var(--border);
@@ -1892,6 +1922,37 @@
     return Math.max(0.42, SAFE_LINES / lines);
   }
 
+  function computeKioskContent(culto, list, proy, mode){
+    const fondo = mode === 'audiencia' ? proy.fondoAudiencia : proy.fondoMusicos;
+    if(!culto || !list.length) return { empty:true, fondo };
+    if(proy.blackout) return { blackout:true, fondo };
+    const idx = Math.min(Math.max(proy.songIndex, 0), list.length - 1);
+    const song = list[idx];
+    const semis = (culto.transposes && culto.transposes[song.id]) || 0;
+    const secs = (song.secciones && song.secciones.length) ? song.secciones : [];
+    const secIdx = Math.min(Math.max(proy.sectionIndex, 0), Math.max(0, secs.length - 1));
+    const sec = secs[secIdx];
+    const override = mode === 'audiencia' ? getLetraOverride(culto, song, sec) : null;
+    const contenidoParaEscala = override !== null ? override : (sec ? sec.contenido : '');
+    const bodyHtml = override !== null
+      ? override.split('\n').map(l => l.trim() === '' ? '<span class="line lyric-line"></span>' : '<span class="line lyric-line">' + escapeHtml(l) + '</span>').join('')
+      : (sec ? renderCuerpo(sec.contenido || '', semis) : '');
+    return {
+      empty:false, blackout:false, fondo, song, bodyHtml,
+      fontScale: computeProyFontScale(contenidoParaEscala),
+      tonoDisplay: transposeChordToken(song.tono || '-', semis),
+      tempo: song.tempo || '', compas: song.compas || ''
+    };
+  }
+
+  async function proyPickScreen(){
+    if(!('getScreenDetails' in window)) return null;
+    try{
+      const details = await window.getScreenDetails();
+      return details.screens;
+    }catch(e){ return null; }
+  }
+
   function renderProyeccionHome(){
     const sorted = [...cultos].sort((a,b) => (a.fecha+ (a.hora||'')).localeCompare(b.fecha + (b.hora||'')));
     app.innerHTML = `
@@ -1965,7 +2026,7 @@
     }
     function goToSong(idx){
       if(idx < 0 || idx >= list.length) return;
-      proy = { songIndex: idx, sectionIndex: 0, blackout: proy.blackout };
+      proy = { ...proy, songIndex: idx, sectionIndex: 0 };
       broadcast();
     }
     function goToSection(idx){
@@ -1984,7 +2045,7 @@
       else if(proy.songIndex > 0){
         const prevIdx = proy.songIndex - 1;
         const prevSecs = (list[prevIdx].secciones || []);
-        proy = { songIndex: prevIdx, sectionIndex: Math.max(0, prevSecs.length - 1), blackout: proy.blackout };
+        proy = { ...proy, songIndex: prevIdx, sectionIndex: Math.max(0, prevSecs.length - 1) };
         broadcast();
       }
     }
@@ -1993,11 +2054,35 @@
       proy = { ...proy, [target === 'audiencia' ? 'fondoAudiencia' : 'fondoMusicos']: id };
       broadcast();
     }
+    let screensList = null;
+    let selectedScreen = { audiencia: null, musicos: null };
+    async function chooseScreens(){
+      if(!('getScreenDetails' in window)){
+        showToast('Tu navegador no permite elegir pantalla automáticamente (usa Chrome, o arrastra la ventana manualmente)');
+        return;
+      }
+      try{
+        const details = await window.getScreenDetails();
+        screensList = details.screens;
+        if(selectedScreen.audiencia === null && screensList.length > 1) selectedScreen.audiencia = 1;
+        if(selectedScreen.musicos === null) selectedScreen.musicos = 0;
+        paint();
+      }catch(e){
+        showToast('No se pudo obtener acceso a las pantallas');
+      }
+    }
     function openWindow(mode){
       const url = location.origin + location.pathname + '#proy-' + mode + '-' + culto.id;
-      const w = Math.round((screen.availWidth || 1280) * 0.9);
-      const h = Math.round((screen.availHeight || 720) * 0.9);
-      const features = `width=${w},height=${h},menubar=no,toolbar=no,location=no,status=no,resizable=yes`;
+      let left, top, w, h;
+      const scr = screensList && selectedScreen[mode] !== null ? screensList[selectedScreen[mode]] : null;
+      if(scr){
+        left = scr.availLeft; top = scr.availTop;
+        w = Math.round(scr.availWidth * 0.92); h = Math.round(scr.availHeight * 0.92);
+      } else {
+        w = Math.round((screen.availWidth || 1280) * 0.9);
+        h = Math.round((screen.availHeight || 720) * 0.9);
+      }
+      const features = `width=${w},height=${h}${left !== undefined ? ',left=' + left + ',top=' + top : ''},menubar=no,toolbar=no,location=no,status=no,resizable=yes`;
       window.open(url, 'cifraviva_' + mode + '_' + culto.id, features);
     }
 
@@ -2013,11 +2098,42 @@
           </div>
         </div>
         <main style="padding:16px 18px 40px; display:flex; flex-direction:column; gap:18px;">
+          <div>
+            <p style="font-weight:700; margin:0 0 10px; font-size:16px;">Vista previa en vivo</p>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+              ${['audiencia','musicos'].map(m => {
+                const c = computeKioskContent(culto, list, proy, m);
+                let inner;
+                if(c.blackout) inner = '<div class="proy-preview-blackout"></div>';
+                else if(c.empty) inner = '<span class="proy-preview-empty">Sin canciones</span>';
+                else inner = `<div class="proy-preview-title">${escapeHtml(c.song.titulo)}</div><div class="proy-preview-body">${c.bodyHtml || ''}</div>`;
+                return `
+                  <div>
+                    <p class="proy-preview-label">${m === 'audiencia' ? 'Audiencia' : 'Músicos'}</p>
+                    <div class="proy-preview mode-${m} proy-bg-${c.fondo || 'negro'}">${inner}</div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
             <button type="button" class="btn" id="btn-open-audiencia">${ICONS.proyector} Vista Audiencia</button>
             <button type="button" class="btn" id="btn-open-musicos">${ICONS.proyector} Vista Músicos</button>
             <button type="button" class="btn ${proy.blackout ? 'btn-danger' : ''}" id="btn-blackout">${proy.blackout ? 'Quitar pantalla negra' : 'Pantalla en negro'}</button>
           </div>
+          ${'getScreenDetails' in window ? `
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+              <button type="button" class="btn" id="btn-choose-screens" style="flex:none;">Elegir pantallas de salida</button>
+              ${screensList ? ['audiencia','musicos'].map(m => `
+                <label style="font-size:13px; color:var(--ink-soft); display:flex; align-items:center; gap:6px;">
+                  ${m === 'audiencia' ? 'Audiencia' : 'Músicos'}:
+                  <select data-screen-select="${m}" style="padding:4px 6px; border-radius:6px; border:1px solid var(--border); background:var(--bg); color:var(--ink);">
+                    ${screensList.map((s,i) => `<option value="${i}" ${selectedScreen[m]===i?'selected':''}>Pantalla ${i+1}${s.isPrimary?' (principal)':''} — ${s.width}×${s.height}</option>`).join('')}
+                  </select>
+                </label>
+              `).join('') : '<span style="font-size:12.5px; color:var(--ink-soft);">Detecta tus pantallas conectadas para que cada ventana se abra directo en la correcta.</span>'}
+            </div>
+          ` : ''}
           <div>
             <p style="font-weight:700; margin:0 0 10px; font-size:16px;">Fondo — Audiencia</p>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
@@ -2089,6 +2205,11 @@
       app.querySelector('#btn-open-audiencia').addEventListener('click', () => openWindow('audiencia'));
       app.querySelector('#btn-open-musicos').addEventListener('click', () => openWindow('musicos'));
       app.querySelector('#btn-blackout').addEventListener('click', toggleBlackout);
+      const btnChooseScreens = app.querySelector('#btn-choose-screens');
+      if(btnChooseScreens) btnChooseScreens.addEventListener('click', chooseScreens);
+      app.querySelectorAll('[data-screen-select]').forEach(sel => sel.addEventListener('change', e => {
+        selectedScreen[sel.dataset.screenSelect] = +e.target.value;
+      }));
       app.querySelectorAll('[data-fondo-audiencia]').forEach(btn => btn.addEventListener('click', () => setFondo('audiencia', btn.dataset.fondoAudiencia)));
       app.querySelectorAll('[data-fondo-musicos]').forEach(btn => btn.addEventListener('click', () => setFondo('musicos', btn.dataset.fondoMusicos)));
       app.querySelector('#btn-prev').addEventListener('click', prevSection);
@@ -2131,33 +2252,28 @@
       const culto = cultos.find(c => c.id === cultoId);
       const list = culto ? culto.songIds.map(id => songs.find(s => s.id === id)).filter(Boolean) : [];
       const proy = proyLoadState(cultoId);
-      const fondoActual = mode === 'audiencia' ? proy.fondoAudiencia : proy.fondoMusicos;
+      const content = computeKioskContent(culto, list, proy, mode);
       PROY_FONDOS.forEach(f => app.classList.remove('proy-bg-' + f.id));
-      app.classList.add('proy-bg-' + (fondoActual || 'negro'));
-      if(!culto || !list.length){
+      app.classList.add('proy-bg-' + (content.fondo || 'negro'));
+      if(content.empty){
         app.innerHTML = `<div class="proy-kiosk-inner"><p class="proy-empty">Repertorio sin canciones.</p></div>`;
         return;
       }
-      if(proy.blackout){
+      if(content.blackout){
         app.innerHTML = `<div class="proy-blackout" style="position:fixed; inset:0;"></div>`;
         return;
       }
-      const idx = Math.min(Math.max(proy.songIndex, 0), list.length - 1);
-      const song = list[idx];
-      const semis = (culto.transposes && culto.transposes[song.id]) || 0;
-      const secs = (song.secciones && song.secciones.length) ? song.secciones : [];
-      const secIdx = Math.min(Math.max(proy.sectionIndex, 0), Math.max(0, secs.length - 1));
-      const sec = secs[secIdx];
-      const override = mode === 'audiencia' ? getLetraOverride(culto, song, sec) : null;
-      const contenidoParaEscala = override !== null ? override : (sec ? sec.contenido : '');
-      const bodyHtml = override !== null
-        ? (override.split('\n').map(l => l.trim() === '' ? '<span class="line lyric-line"></span>' : '<span class="line lyric-line">' + escapeHtml(l) + '</span>').join(''))
-        : (sec ? renderCuerpo(sec.contenido || '', semis) : '');
-      const fontScale = computeProyFontScale(contenidoParaEscala);
       app.innerHTML = `
+        ${mode === 'musicos' ? `
+          <div class="proy-meta-badge">
+            <span>Tono <b>${escapeHtml(content.tonoDisplay)}</b></span>
+            ${content.compas ? `<span>Compás <b>${escapeHtml(content.compas)}</b></span>` : ''}
+            ${content.tempo ? `<span><b>${escapeHtml(content.tempo)}</b> BPM</span>` : ''}
+          </div>
+        ` : ''}
         <div class="proy-kiosk-inner">
-          <div class="proy-song-title">${escapeHtml(song.titulo)}</div>
-          <pre class="proy-body" style="--proy-scale:${fontScale};">${bodyHtml || '<span class="proy-empty">— sin contenido —</span>'}</pre>
+          <div class="proy-song-title">${escapeHtml(content.song.titulo)}</div>
+          <pre class="proy-body" style="--proy-scale:${content.fontScale};">${content.bodyHtml || '<span class="proy-empty">— sin contenido —</span>'}</pre>
         </div>
       `;
     }
