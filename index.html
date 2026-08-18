@@ -457,14 +457,21 @@
     .proy-body{ font-size:clamp(16px, calc(7vh * var(--proy-scale, 1)), 88px); }
   }
   .proy-musicos .proy-body{
-    font-family:var(--font-mono); white-space:pre; display:block; width:100%; overflow-x:auto;
+    font-family:var(--font-mono); white-space:pre; display:block; width:100%; overflow-x:auto; text-align:left;
   }
+  .proy-musicos .proy-kiosk-inner{ align-items:flex-start; text-align:left; }
+  .proy-musicos .proy-song-title{ align-self:flex-start; }
+  .proy-musicos .proy-meta-badge{ text-align:right; }
   .proy-audiencia .proy-body{
     font-family:var(--font-body); font-weight:800; line-height:1.45; letter-spacing:0.01em;
     text-transform:none;
   }
   .proy-body .line{ display:block; }
-  .proy-audiencia .proy-body .line{ margin-bottom:0.35em; }
+  .proy-audiencia .proy-body .line{
+    margin-bottom:0.35em;
+    text-wrap:balance;
+    text-wrap:pretty;
+  }
   .proy-audiencia .proy-body .line:last-child{ margin-bottom:0; }
   .proy-body .chord{ color:#E8A33D; }
   .proy-audiencia .proy-body .chord-line{ display:none; }
@@ -545,7 +552,7 @@
   .proy-preview-label{ font-size:11.5px; font-weight:700; color:var(--ink-soft); margin:0 0 6px; text-transform:uppercase; letter-spacing:0.04em; }
   .proy-preview-title{ font-size:9px; opacity:0.55; margin-bottom:4px; position:relative; z-index:1; }
   .proy-preview-body{
-    font-family:var(--font-mono); font-size:7px; line-height:1.35; white-space:pre-wrap;
+    font-family:var(--font-mono); font-size:calc(7px * var(--proy-preview-scale, 1)); line-height:1.35; white-space:pre-wrap;
     position:relative; z-index:1; max-height:100%; overflow:hidden;
   }
   .proy-preview-body .line{ display:block; }
@@ -2087,6 +2094,13 @@
       proy = { ...proy, [target === 'audiencia' ? 'fondoAudiencia' : 'fondoMusicos']: id };
       broadcast();
     }
+    function adjustPreviewScale(mode, delta){
+      const cur = loadProyManualScale(culto.id, mode);
+      const next = Math.min(2.5, Math.max(0.5, +(cur + delta).toFixed(2)));
+      saveProyManualScale(culto.id, mode, next);
+      channel.postMessage(proy);
+      paint();
+    }
     let screensList = null;
     let selectedScreen = { audiencia: null, musicos: null };
     async function chooseScreens(){
@@ -2136,13 +2150,20 @@
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
               ${['audiencia','musicos'].map(m => {
                 const c = computeKioskContent(culto, list, proy, m);
+                const mScale = loadProyManualScale(culto.id, m);
                 let inner;
                 if(c.blackout) inner = '<div class="proy-preview-blackout"></div>';
                 else if(c.empty) inner = '<span class="proy-preview-empty">Sin canciones</span>';
-                else inner = `<div class="proy-preview-title">${escapeHtml(c.song.titulo)}</div><div class="proy-preview-body">${c.bodyHtml || ''}</div>`;
+                else inner = `<div class="proy-preview-title">${escapeHtml(c.song.titulo)}</div><div class="proy-preview-body" style="--proy-preview-scale:${mScale};">${c.bodyHtml || ''}</div>`;
                 return `
                   <div>
-                    <p class="proy-preview-label">${m === 'audiencia' ? 'Audiencia' : 'Músicos'}</p>
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                      <p class="proy-preview-label" style="margin:0;">${m === 'audiencia' ? 'Audiencia' : 'Músicos'}</p>
+                      <div style="display:flex; gap:4px;">
+                        <button type="button" class="icon-btn proy-preview-size-btn" data-scale-down="${m}" aria-label="Letra más chica" style="width:24px;height:24px;font-size:10.5px;font-weight:700;border:1px solid var(--border);">A−</button>
+                        <button type="button" class="icon-btn proy-preview-size-btn" data-scale-up="${m}" aria-label="Letra más grande" style="width:24px;height:24px;font-size:10.5px;font-weight:700;border:1px solid var(--border);">A+</button>
+                      </div>
+                    </div>
                     <div class="proy-preview mode-${m} proy-bg-${c.fondo || 'negro'}">${inner}</div>
                   </div>
                 `;
@@ -2245,6 +2266,8 @@
       }));
       app.querySelectorAll('[data-fondo-audiencia]').forEach(btn => btn.addEventListener('click', () => setFondo('audiencia', btn.dataset.fondoAudiencia)));
       app.querySelectorAll('[data-fondo-musicos]').forEach(btn => btn.addEventListener('click', () => setFondo('musicos', btn.dataset.fondoMusicos)));
+      app.querySelectorAll('[data-scale-down]').forEach(btn => btn.addEventListener('click', () => adjustPreviewScale(btn.dataset.scaleDown, -0.1)));
+      app.querySelectorAll('[data-scale-up]').forEach(btn => btn.addEventListener('click', () => adjustPreviewScale(btn.dataset.scaleUp, 0.1)));
       app.querySelector('#btn-prev').addEventListener('click', prevSection);
       app.querySelector('#btn-next').addEventListener('click', nextSection);
       app.querySelectorAll('[data-sec]').forEach(btn => btn.addEventListener('click', () => goToSection(+btn.dataset.sec)));
@@ -2292,11 +2315,11 @@
   function renderProyeccionKiosk(cultoId, mode){
     app.classList.add('proy-kiosk', 'proy-' + mode);
     app.classList.remove(mode === 'audiencia' ? 'proy-musicos' : 'proy-audiencia');
-    let manualScale = loadProyManualScale(cultoId, mode);
 
     function adjustScale(delta){
-      manualScale = Math.min(2.5, Math.max(0.5, +(manualScale + delta).toFixed(2)));
-      saveProyManualScale(cultoId, mode, manualScale);
+      const cur = loadProyManualScale(cultoId, mode);
+      const next = Math.min(2.5, Math.max(0.5, +(cur + delta).toFixed(2)));
+      saveProyManualScale(cultoId, mode, next);
       paint();
     }
 
@@ -2304,6 +2327,7 @@
       const culto = cultos.find(c => c.id === cultoId);
       const list = culto ? culto.songIds.map(id => songs.find(s => s.id === id)).filter(Boolean) : [];
       const proy = proyLoadState(cultoId);
+      const manualScale = loadProyManualScale(cultoId, mode);
       const content = computeKioskContent(culto, list, proy, mode);
       PROY_FONDOS.forEach(f => app.classList.remove('proy-bg-' + f.id));
       app.classList.add('proy-bg-' + (content.fondo || 'negro'));
