@@ -1991,7 +1991,7 @@
       bodyHtml = sec ? renderCuerpo(sec.contenido || '', semis) : '';
     }
     return {
-      empty:false, blackout:false, fondo, song, bodyHtml,
+      empty:false, blackout:false, fondo, song, sec, bodyHtml,
       fontScale: computeProyFontScale(contenidoParaEscala),
       tonoDisplay: transposeChordToken(song.tono || '-', semis),
       tempo: song.tempo || '', compas: song.compas || ''
@@ -2108,9 +2108,10 @@
       broadcast();
     }
     function adjustPreviewScale(mode, delta){
-      const cur = loadProyManualScale(culto.id, mode);
+      const c = computeKioskContent(culto, list, proy, mode);
+      const cur = loadProyManualScale(culto.id, mode, c.song, c.sec);
       const next = Math.min(2.5, Math.max(0.5, +(cur + delta).toFixed(2)));
-      saveProyManualScale(culto.id, mode, next);
+      saveProyManualScale(culto.id, mode, next, c.song, c.sec);
       channel.postMessage(proy);
       paint();
     }
@@ -2163,7 +2164,7 @@
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
               ${['audiencia','musicos'].map(m => {
                 const c = computeKioskContent(culto, list, proy, m);
-                const mScale = loadProyManualScale(culto.id, m);
+                const mScale = loadProyManualScale(culto.id, m, c.song, c.sec);
                 let inner;
                 if(c.blackout) inner = '<div class="proy-preview-blackout"></div>';
                 else if(c.empty) inner = '<span class="proy-preview-empty">Sin canciones</span>';
@@ -2314,14 +2315,28 @@
   let proyKioskChannel = null;
   let proyKioskChannelKey = null;
   function proyManualScaleKey(cultoId, mode){ return 'cifraviva-scale-' + cultoId + '-' + mode; }
-  function loadProyManualScale(cultoId, mode){
+  function audienciaScaleKey(songId, secId){ return 'cifraviva-ascale-' + songId + '-' + secId; }
+  function loadProyManualScale(cultoId, mode, song, sec){
+    if(mode === 'audiencia' && song && sec){
+      try{
+        const raw = localStorage.getItem(audienciaScaleKey(song.id, sec.id));
+        if(raw) return Math.min(2.5, Math.max(0.5, parseFloat(raw)));
+      }catch(e){}
+      return (typeof sec.audienciaScale === 'number' && sec.audienciaScale > 0) ? sec.audienciaScale : 1;
+    }
     try{
       const raw = localStorage.getItem(proyManualScaleKey(cultoId, mode));
       if(raw) return Math.min(2.5, Math.max(0.5, parseFloat(raw)));
     }catch(e){}
     return 1;
   }
-  function saveProyManualScale(cultoId, mode, val){
+  function saveProyManualScale(cultoId, mode, val, song, sec){
+    if(mode === 'audiencia' && song && sec){
+      sec.audienciaScale = val;
+      saveSongs();
+      try{ localStorage.setItem(audienciaScaleKey(song.id, sec.id), String(val)); }catch(e){}
+      return;
+    }
     try{ localStorage.setItem(proyManualScaleKey(cultoId, mode), String(val)); }catch(e){}
   }
 
@@ -2330,9 +2345,13 @@
     app.classList.remove(mode === 'audiencia' ? 'proy-musicos' : 'proy-audiencia');
 
     function adjustScale(delta){
-      const cur = loadProyManualScale(cultoId, mode);
+      const culto = cultos.find(c => c.id === cultoId);
+      const list = culto ? culto.songIds.map(id => songs.find(s => s.id === id)).filter(Boolean) : [];
+      const proy = proyLoadState(cultoId);
+      const content = computeKioskContent(culto, list, proy, mode);
+      const cur = loadProyManualScale(cultoId, mode, content.song, content.sec);
       const next = Math.min(2.5, Math.max(0.5, +(cur + delta).toFixed(2)));
-      saveProyManualScale(cultoId, mode, next);
+      saveProyManualScale(cultoId, mode, next, content.song, content.sec);
       paint();
     }
 
@@ -2340,8 +2359,8 @@
       const culto = cultos.find(c => c.id === cultoId);
       const list = culto ? culto.songIds.map(id => songs.find(s => s.id === id)).filter(Boolean) : [];
       const proy = proyLoadState(cultoId);
-      const manualScale = loadProyManualScale(cultoId, mode);
       const content = computeKioskContent(culto, list, proy, mode);
+      const manualScale = loadProyManualScale(cultoId, mode, content.song, content.sec);
       PROY_FONDOS.forEach(f => app.classList.remove('proy-bg-' + f.id));
       app.classList.add('proy-bg-' + (content.fondo || 'negro'));
       if(content.empty){
