@@ -788,7 +788,8 @@
     if(!db || suppressPush) return;
     const cloudSongs = songs.map(s => ({
       id: s.id, titulo: s.titulo, artista: s.artista, tono: s.tono,
-      tempo: s.tempo || '', compas: s.compas || '', link: s.link || '', secciones: s.secciones, updatedAt: s.updatedAt
+      tempo: s.tempo || '', compas: s.compas || '', link: s.link || '', secciones: s.secciones, updatedAt: s.updatedAt,
+      letraAudienciaOverride: s.letraAudienciaOverride || {}
     }));
     db.collection('iglesia').doc('datos').set({ songs: cloudSongs, cultos, syncedAt: Date.now() })
       .catch(e => console.warn('No se pudo sincronizar con la nube', e));
@@ -1936,26 +1937,28 @@
   function proySaveState(cultoId, st){
     try{ localStorage.setItem(proyStorageKey(cultoId), JSON.stringify(st)); }catch(e){}
   }
-  function letraOverrideKey(cultoId, songId, secId){ return 'cifraviva-letra-' + cultoId + '-' + songId + '-' + secId; }
+  function letraOverrideKey(songId, secId){ return 'cifraviva-letra-' + songId + '-' + secId; }
   function getLetraOverride(culto, song, sec){
-    if(!culto || !song || !sec) return null;
+    if(!song || !sec) return null;
     try{
-      const raw = localStorage.getItem(letraOverrideKey(culto.id, song.id, sec.id));
+      const raw = localStorage.getItem(letraOverrideKey(song.id, sec.id));
       if(raw !== null) return raw;
     }catch(e){}
-    const stored = culto.letrasEditadas && culto.letrasEditadas[song.id + '::' + sec.id];
-    return (stored !== undefined) ? stored : null;
+    const stored = song.letraAudienciaOverride && song.letraAudienciaOverride[sec.id];
+    if(stored !== undefined) return stored;
+    const legacy = culto && culto.letrasEditadas && culto.letrasEditadas[song.id + '::' + sec.id];
+    return (legacy !== undefined) ? legacy : null;
   }
   function setLetraOverride(culto, song, sec, texto){
-    culto.letrasEditadas = culto.letrasEditadas || {};
-    culto.letrasEditadas[song.id + '::' + sec.id] = texto;
-    saveCultos();
-    try{ localStorage.setItem(letraOverrideKey(culto.id, song.id, sec.id), texto); }catch(e){}
+    song.letraAudienciaOverride = song.letraAudienciaOverride || {};
+    song.letraAudienciaOverride[sec.id] = texto;
+    saveSongs();
+    try{ localStorage.setItem(letraOverrideKey(song.id, sec.id), texto); }catch(e){}
   }
   function clearLetraOverride(culto, song, sec){
-    if(culto.letrasEditadas) delete culto.letrasEditadas[song.id + '::' + sec.id];
-    saveCultos();
-    try{ localStorage.removeItem(letraOverrideKey(culto.id, song.id, sec.id)); }catch(e){}
+    if(song.letraAudienciaOverride) delete song.letraAudienciaOverride[sec.id];
+    saveSongs();
+    try{ localStorage.removeItem(letraOverrideKey(song.id, sec.id)); }catch(e){}
   }
   function computeProyFontScale(cuerpo){
     const lines = (cuerpo || '').split('\n').filter(l => l.trim() !== '').length;
