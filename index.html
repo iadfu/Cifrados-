@@ -147,6 +147,11 @@
     color:var(--accent-ink); background:var(--accent-soft); border-radius:10px;
     padding:6px 10px; min-width:34px; text-align:center;
   }
+  .badge-espera{
+    flex:none; font-size:11px; font-weight:700; letter-spacing:0.02em; text-transform:uppercase;
+    color:var(--danger); background:var(--danger-soft); border-radius:999px;
+    padding:3px 9px; white-space:nowrap;
+  }
   .fab{
     position:fixed; bottom:26px; left:50%; transform:translateX(calc(-1 * min(280px, 50vw) + 0px));
     z-index:6;
@@ -789,7 +794,7 @@
     const cloudSongs = songs.map(s => ({
       id: s.id, titulo: s.titulo, artista: s.artista, tono: s.tono,
       tempo: s.tempo || '', compas: s.compas || '', link: s.link || '', secciones: s.secciones, updatedAt: s.updatedAt,
-      letraAudienciaOverride: s.letraAudienciaOverride || {}
+      letraAudienciaOverride: s.letraAudienciaOverride || {}, enEspera: !!s.enEspera
     }));
     db.collection('iglesia').doc('datos').set({ songs: cloudSongs, cultos, syncedAt: Date.now() })
       .catch(e => console.warn('No se pudo sincronizar con la nube', e));
@@ -1380,7 +1385,7 @@
               <li>
                 <button class="song-card" data-open="${s.id}">
                   <div class="song-card-info">
-                    <p class="song-card-title">${escapeHtml(s.titulo)}</p>
+                    <p class="song-card-title">${escapeHtml(s.titulo)}${s.enEspera ? ' <span class="badge-espera">En espera</span>' : ''}</p>
                     <p class="song-card-artist">${escapeHtml(s.artista || 'Sin artista')}${s.tempo ? ' · ' + escapeHtml(s.tempo) + ' BPM' : ''}${s.compas ? ' · ' + escapeHtml(s.compas) : ''}</p>
                   </div>
                   <span class="tono-badge">${escapeHtml(transposeChordToken(s.tono || '-', s.transpose||0))}</span>
@@ -1645,6 +1650,10 @@
           <label for="f-titulo">Título</label>
           <input id="f-titulo" type="text" value="${escapeHtml(editing ? editing.titulo : '')}" placeholder="Nombre de la canción" />
         </div>
+        <label style="display:flex; align-items:center; gap:8px; font-size:14px; color:var(--ink); cursor:pointer;">
+          <input type="checkbox" id="f-en-espera" ${editing && editing.enEspera ? 'checked' : ''} style="width:18px; height:18px; accent-color:var(--accent); cursor:pointer;" />
+          Cifrado en espera (aún no está listo)
+        </label>
         <div class="field">
           <label for="f-artista">Artista / autor</label>
           <input id="f-artista" type="text" value="${escapeHtml(editing ? (editing.artista||'') : '')}" placeholder="Opcional" />
@@ -1705,15 +1714,16 @@
       const tempo = app.querySelector('#f-tempo').value.trim();
       const compas = app.querySelector('#f-compas').value.trim();
       const link = app.querySelector('#f-link').value.trim();
+      const enEspera = app.querySelector('#f-en-espera').checked;
       const secciones = formSecciones.map(s => ({ id: s.id, tipo: s.tipo, contenido: s.contenido, veces: s.veces || 1, nota: s.nota || '' }));
       if(!titulo){ showToast('Falta el título de la canción'); app.querySelector('#f-titulo').focus(); return; }
       if(editing){
-        editing.titulo = titulo; editing.artista = artista; editing.tono = tono; editing.tempo = tempo; editing.compas = compas; editing.link = link; editing.secciones = secciones;
+        editing.titulo = titulo; editing.artista = artista; editing.tono = tono; editing.tempo = tempo; editing.compas = compas; editing.link = link; editing.secciones = secciones; editing.enEspera = enEspera;
         editing.updatedAt = Date.now();
         saveSongs();
         go('detail', editing.id);
       } else {
-        const song = { id: uid(), titulo, artista, tono, tempo, compas, link, secciones, transpose:0, fontScale:1, updatedAt: Date.now() };
+        const song = { id: uid(), titulo, artista, tono, tempo, compas, link, secciones, enEspera, transpose:0, fontScale:1, updatedAt: Date.now() };
         songs.push(song);
         saveSongs();
         go('detail', song.id);
@@ -1884,7 +1894,7 @@
                 <button class="song-card" data-open="${s.id}">
                   <span class="tono-badge" style="min-width:26px;">${i+1}</span>
                   <div class="song-card-info">
-                    <p class="song-card-title">${escapeHtml(s.titulo)}</p>
+                    <p class="song-card-title">${escapeHtml(s.titulo)}${s.enEspera ? ' <span class="badge-espera">En espera</span>' : ''}</p>
                     <p class="song-card-artist">${escapeHtml(s.artista || 'Sin artista')}</p>
                   </div>
                   <span class="tono-badge">${escapeHtml(transposeChordToken(s.tono || '-', (culto.transposes && culto.transposes[s.id]) || 0))}</span>
@@ -2475,7 +2485,7 @@
       wrap.innerHTML = filtered.length ? filtered.map(s => `
         <button type="button" class="song-card picker-song-btn" data-id="${s.id}" style="margin-bottom:8px;">
           <div class="song-card-info">
-            <p class="song-card-title">${escapeHtml(s.titulo)}</p>
+            <p class="song-card-title">${escapeHtml(s.titulo)}${s.enEspera ? ' <span class="badge-espera">En espera</span>' : ''}</p>
             <p class="song-card-artist">${escapeHtml(s.artista || 'Sin artista')}</p>
           </div>
           <span class="tono-badge" style="${formSongIds.includes(s.id) ? 'background:var(--success);color:#fff;' : ''}">${formSongIds.includes(s.id) ? '✓' : '+'}</span>
