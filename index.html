@@ -152,6 +152,8 @@
     color:var(--danger); background:var(--danger-soft); border-radius:999px;
     padding:3px 9px; white-space:nowrap;
   }
+  .song-card:disabled{ opacity:0.55; cursor:not-allowed; }
+  .song-card:disabled:hover{ border-color:var(--border); box-shadow:var(--card-shadow); transform:none; }
   .fab{
     position:fixed; bottom:26px; left:50%; transform:translateX(calc(-1 * min(280px, 50vw) + 0px));
     z-index:6;
@@ -1106,6 +1108,15 @@
   function go(view, id, opts){
     opts = opts || {};
     if((view === 'form' || view === 'share' || view === 'culto-form') && !isLider()) view = 'list';
+    if(view === 'detail' && !isLider()){
+      const s = songs.find(x => x.id === id);
+      if(s && s.enEspera){
+        showToast('Este cifrado todavía está en espera, no disponible para músicos');
+        view = opts.returnView || 'list';
+        id = opts.returnId || null;
+        opts = {};
+      }
+    }
     if(view !== 'detail' || id !== state.currentId) state.liveView = false;
     if(view === 'detail' && id !== state.currentId){
       const s = songs.find(x => x.id === id);
@@ -1383,7 +1394,7 @@
           <ul class="song-list is-cifrados">
             ${filtered.map(s => `
               <li>
-                <button class="song-card" data-open="${s.id}">
+                <button class="song-card" data-open="${s.id}" ${!isLider() && s.enEspera ? 'disabled' : ''}>
                   <div class="song-card-info">
                     <p class="song-card-title">${escapeHtml(s.titulo)}${s.enEspera ? ' <span class="badge-espera">En espera</span>' : ''}</p>
                     <p class="song-card-artist">${escapeHtml(s.artista || 'Sin artista')}${s.tempo ? ' · ' + escapeHtml(s.tempo) + ' BPM' : ''}${s.compas ? ' · ' + escapeHtml(s.compas) : ''}</p>
@@ -1891,7 +1902,7 @@
           <ul class="song-list" style="padding:14px 18px;">
             ${list.map((s,i) => `
               <li>
-                <button class="song-card" data-open="${s.id}">
+                <button class="song-card" data-open="${s.id}" ${!isLider() && s.enEspera ? 'disabled' : ''}>
                   <span class="tono-badge" style="min-width:26px;">${i+1}</span>
                   <div class="song-card-info">
                     <p class="song-card-title">${escapeHtml(s.titulo)}${s.enEspera ? ' <span class="badge-espera">En espera</span>' : ''}</p>
