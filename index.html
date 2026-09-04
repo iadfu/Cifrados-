@@ -2365,6 +2365,33 @@
     app.classList.add('proy-kiosk', 'proy-' + mode);
     app.classList.remove(mode === 'audiencia' ? 'proy-musicos' : 'proy-audiencia');
 
+    function changeSection(delta){
+      const culto = cultos.find(c => c.id === cultoId);
+      if(!culto) return;
+      const list = culto.songIds.map(id => songs.find(s => s.id === id)).filter(Boolean);
+      if(!list.length) return;
+      let proy = proyLoadState(cultoId);
+      let songIndex = Math.min(Math.max(proy.songIndex, 0), list.length - 1);
+      let sectionIndex = proy.sectionIndex;
+      const secs = (list[songIndex].secciones && list[songIndex].secciones.length) ? list[songIndex].secciones : [];
+      if(delta > 0){
+        if(sectionIndex < secs.length - 1) sectionIndex++;
+        else if(songIndex < list.length - 1){ songIndex++; sectionIndex = 0; }
+        else return;
+      } else {
+        if(sectionIndex > 0) sectionIndex--;
+        else if(songIndex > 0){
+          songIndex--;
+          const prevSecs = list[songIndex].secciones || [];
+          sectionIndex = Math.max(0, prevSecs.length - 1);
+        } else return;
+      }
+      proy = { ...proy, songIndex, sectionIndex };
+      proySaveState(cultoId, proy);
+      if(proyKioskChannel) proyKioskChannel.postMessage(proy);
+      paint();
+    }
+
     function adjustScale(delta){
       const culto = cultos.find(c => c.id === cultoId);
       const list = culto ? culto.songIds.map(id => songs.find(s => s.id === id)).filter(Boolean) : [];
@@ -2423,6 +2450,10 @@
     proyKioskChannel.onmessage = paint;
     window.onstorage = (ev) => {
       if(ev.key === proyStorageKey(cultoId)) paint();
+    };
+    window.onkeydown = (e) => {
+      if(['ArrowRight','ArrowDown','PageDown',' '].includes(e.key)){ e.preventDefault(); changeSection(1); }
+      else if(['ArrowLeft','ArrowUp','PageUp','Backspace'].includes(e.key)){ e.preventDefault(); changeSection(-1); }
     };
   }
 
