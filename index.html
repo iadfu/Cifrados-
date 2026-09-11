@@ -1558,7 +1558,7 @@
   function renderForm(){
     const editing = state.currentId ? songs.find(s => s.id === state.currentId) : null;
     let formSecciones = (editing && editing.secciones && editing.secciones.length)
-      ? editing.secciones.map(s => ({ id: s.id, tipo: s.tipo, contenido: s.contenido, veces: s.veces || 1, nota: s.nota || '', audienciaScale: s.audienciaScale }))
+      ? editing.secciones.map(s => ({ id: s.id, tipo: s.tipo, contenido: s.contenido, veces: s.veces || 1, nota: s.nota || '', audienciaScale: (typeof s.audienciaScale === 'number' ? s.audienciaScale : null) }))
       : [{ id: uid(), tipo: 'Intro', contenido: '', veces: 1 }];
 
     function seccionRowHtml(sec, idx){
@@ -1727,7 +1727,7 @@
       const compas = app.querySelector('#f-compas').value.trim();
       const link = app.querySelector('#f-link').value.trim();
       const enEspera = app.querySelector('#f-en-espera').checked;
-      const secciones = formSecciones.map(s => ({ id: s.id, tipo: s.tipo, contenido: s.contenido, veces: s.veces || 1, nota: s.nota || '', audienciaScale: s.audienciaScale }));
+      const secciones = formSecciones.map(s => ({ id: s.id, tipo: s.tipo, contenido: s.contenido, veces: s.veces || 1, nota: s.nota || '', audienciaScale: (typeof s.audienciaScale === 'number' ? s.audienciaScale : null) }));
       if(!titulo){ showToast('Falta el título de la canción'); app.querySelector('#f-titulo').focus(); return; }
       if(editing){
         editing.titulo = titulo; editing.artista = artista; editing.tono = tono; editing.tempo = tempo; editing.compas = compas; editing.link = link; editing.secciones = secciones; editing.enEspera = enEspera;
