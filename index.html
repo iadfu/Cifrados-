@@ -776,6 +776,16 @@
     #cifrados-app .song-list.is-tabla .cell-link{ padding:0 12px; }
   }
 
+  /* ---- Fondos propios ---- */
+  #cifrados-app.proy-kiosk.proy-bg-custom, .proy-fondo-swatch.proy-bg-custom, .proy-preview.proy-bg-custom{ background-color:#0A0A0C; background-size:cover; background-position:center; background-repeat:no-repeat; }
+  .swatch-wrap{ position:relative; }
+  .swatch-del{ position:absolute; top:-6px; right:-6px; width:22px; height:22px; border-radius:50%; border:1px solid var(--border); background:var(--bg-elevated); color:var(--danger); font-size:15px; line-height:1; padding:0; display:flex; align-items:center; justify-content:center; box-shadow:var(--card-shadow); z-index:2; }
+  .swatch-del:hover{ background:var(--danger-soft); }
+  .swatch-add{ border:1.5px dashed var(--border); background:transparent; cursor:pointer; align-items:center; padding-bottom:0; }
+  .swatch-add span{ color:var(--accent-ink); text-shadow:none; }
+  .swatch-add:hover{ border-color:var(--accent); background:var(--accent-soft); }
+  .swatch-add:focus-within{ outline:2px solid var(--accent); outline-offset:2px; }
+
   @media print{
     *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; color-adjust:exact; }
     body, #cifrados-app{ background:#fff !important; }
@@ -2176,7 +2186,87 @@
     { id:'estrellado', nombre:'Estrellado' },
     { id:'vineta', nombre:'Viñeta' }
   ];
-  const PROY_DEFAULT_STATE = { songIndex:0, sectionIndex:0, blackout:false, fondoAudiencia:'negro', fondoMusicos:'negro' };
+  const PROY_DEFAULT_STATE = { songIndex:0, sectionIndex:0, blackout:false, fondoAudiencia:'negro', fondoMusicos:'negro', fondoOscuro:45 };
+
+  let fondosCustom = new Map();
+  const fondosIntentados = new Set();
+  function fondosDB(){
+    return new Promise((res, rej) => {
+      const rq = indexedDB.open('cifraviva-fondos', 1);
+      rq.onupgradeneeded = () => rq.result.createObjectStore('fondos', { keyPath:'id' });
+      rq.onsuccess = () => res(rq.result);
+      rq.onerror = () => rej(rq.error);
+    });
+  }
+  function fondosTx(mode, fn){
+    return fondosDB().then(db => new Promise((res, rej) => {
+      const tx = db.transaction('fondos', mode);
+      const req = fn(tx.objectStore('fondos'));
+      tx.oncomplete = () => { db.close(); res(req ? req.result : undefined); };
+      tx.onerror = () => { db.close(); rej(tx.error); };
+    }));
+  }
+  async function cargarFondosCustom(){
+    try{
+      const items = await fondosTx('readonly', st => st.getAll());
+      const nuevo = new Map();
+      items.sort((a,b) => a.creado - b.creado).forEach(it => {
+        const previo = fondosCustom.get(it.id);
+        nuevo.set(it.id, { id:it.id, nombre:it.nombre, url: previo ? previo.url : URL.createObjectURL(it.blob) });
+      });
+      fondosCustom.forEach((f, id) => { if(!nuevo.has(id)) URL.revokeObjectURL(f.url); });
+      fondosCustom = nuevo;
+    }catch(e){ console.warn('No se pudieron cargar los fondos', e); }
+  }
+  async function redimensionarImagen(file){
+    const bmp = await createImageBitmap(file);
+    const k = Math.min(1, 1920 / Math.max(bmp.width, bmp.height));
+    const c = document.createElement('canvas');
+    c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+    c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+    if(bmp.close) bmp.close();
+    return await new Promise(r => c.toBlob(r, 'image/jpeg', 0.86));
+  }
+  async function agregarFondo(file){
+    const blob = await redimensionarImagen(file);
+    const nombre = (file.name || 'Fondo').replace(/\.[^.]+$/, '').slice(0, 14) || 'Fondo';
+    await fondosTx('readwrite', st => st.put({ id: uid(), nombre, blob, creado: Date.now() }));
+  }
+  async function eliminarFondo(id){
+    await fondosTx('readwrite', st => st.delete(id));
+  }
+  function fondoAttrs(fondoId, oscuro){
+    if(typeof fondoId === 'string' && fondoId.indexOf('custom:') === 0){
+      const id = fondoId.slice(7);
+      const f = fondosCustom.get(id);
+      if(f){
+        const a = (typeof oscuro === 'number' ? oscuro : 45) / 100;
+        return { cls:'proy-bg-custom', img:"linear-gradient(rgba(0,0,0," + a + "),rgba(0,0,0," + a + ")),url('" + f.url + "')", id };
+      }
+      return { cls:'proy-bg-negro', img:'', id, faltante:true };
+    }
+    return { cls:'proy-bg-' + (fondoId || 'negro'), img:'' };
+  }
+  function fondoPickerHtml(target, seleccionado){
+    const attr = 'data-fondo-' + target;
+    const integrados = PROY_FONDOS.map(f => `
+                <button type="button" class="proy-fondo-swatch proy-bg-${f.id} ${seleccionado === f.id ? 'proy-active' : ''}" ${attr}="${f.id}">
+                  <span>${escapeHtml(f.nombre)}</span>
+                </button>`).join('');
+    const propios = [...fondosCustom.values()].map(f => `
+                <div class="swatch-wrap">
+                  <button type="button" class="proy-fondo-swatch proy-bg-custom ${seleccionado === 'custom:' + f.id ? 'proy-active' : ''}" ${attr}="custom:${f.id}" style="background-image:linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.3)),url('${f.url}');">
+                    <span>${escapeHtml(f.nombre)}</span>
+                  </button>
+                  <button type="button" class="swatch-del" data-del-fondo="${f.id}" aria-label="Eliminar fondo ${escapeHtml(f.nombre)}">×</button>
+                </div>`).join('');
+    const subir = `
+                <label class="proy-fondo-swatch swatch-add">
+                  <span>+ Subir fondo</span>
+                  <input type="file" accept="image/*" multiple hidden data-fondo-file>
+                </label>`;
+    return integrados + propios + subir;
+  }
   function proyLoadState(cultoId){
     try{
       const raw = localStorage.getItem(proyStorageKey(cultoId));
@@ -2406,6 +2496,7 @@
               ${['audiencia','musicos'].map(m => {
                 const c = computeKioskContent(culto, list, proy, m);
                 const mScale = loadProyManualScale(culto.id, m, c.song, c.sec);
+                const fa = fondoAttrs(c.fondo, proy.fondoOscuro);
                 let inner;
                 if(c.blackout) inner = '<div class="proy-preview-blackout"></div>';
                 else if(c.empty) inner = '<span class="proy-preview-empty">Sin canciones</span>';
@@ -2419,7 +2510,7 @@
                         <button type="button" class="icon-btn proy-preview-size-btn" data-scale-up="${m}" aria-label="Letra más grande" style="width:24px;height:24px;font-size:10.5px;font-weight:700;border:1px solid var(--border);">A+</button>
                       </div>
                     </div>
-                    <div class="proy-preview mode-${m} proy-bg-${c.fondo || 'negro'}">${inner}</div>
+                    <div class="proy-preview mode-${m} ${fa.cls}" style="${fa.img ? 'background-image:' + fa.img + ';' : ''}">${inner}</div>
                   </div>
                 `;
               }).join('')}
@@ -2446,22 +2537,21 @@
           <div>
             <p style="font-weight:700; margin:0 0 10px; font-size:16px;">Fondo — Audiencia</p>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
-              ${PROY_FONDOS.map(f => `
-                <button type="button" class="proy-fondo-swatch proy-bg-${f.id} ${proy.fondoAudiencia === f.id ? 'proy-active' : ''}" data-fondo-audiencia="${f.id}">
-                  <span>${escapeHtml(f.nombre)}</span>
-                </button>
-              `).join('')}
+              ${fondoPickerHtml('audiencia', proy.fondoAudiencia)}
             </div>
           </div>
           <div>
             <p style="font-weight:700; margin:0 0 10px; font-size:16px;">Fondo — Músicos</p>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
-              ${PROY_FONDOS.map(f => `
-                <button type="button" class="proy-fondo-swatch proy-bg-${f.id} ${proy.fondoMusicos === f.id ? 'proy-active' : ''}" data-fondo-musicos="${f.id}">
-                  <span>${escapeHtml(f.nombre)}</span>
-                </button>
-              `).join('')}
+              ${fondoPickerHtml('musicos', proy.fondoMusicos)}
             </div>
+            ${fondosCustom.size ? `
+              <label style="display:flex; align-items:center; gap:12px; margin-top:14px; font-size:13px; color:var(--ink-soft);">
+                Oscurecer fondos con imagen
+                <input type="range" id="rng-oscuro" min="0" max="80" step="5" value="${proy.fondoOscuro}" style="flex:1; max-width:260px;">
+                <b id="oscuro-val" style="color:var(--ink); min-width:36px;">${proy.fondoOscuro}%</b>
+              </label>
+            ` : ''}
           </div>
           <div>
             <p style="font-weight:700; margin:0 0 10px; font-size:16px;">${song ? escapeHtml(song.titulo) : ''}</p>
@@ -2521,6 +2611,35 @@
       }));
       app.querySelectorAll('[data-fondo-audiencia]').forEach(btn => btn.addEventListener('click', () => setFondo('audiencia', btn.dataset.fondoAudiencia)));
       app.querySelectorAll('[data-fondo-musicos]').forEach(btn => btn.addEventListener('click', () => setFondo('musicos', btn.dataset.fondoMusicos)));
+      app.querySelectorAll('[data-fondo-file]').forEach(inp => inp.addEventListener('change', async () => {
+        const files = [...inp.files].filter(f => f.type.indexOf('image/') === 0);
+        if(!files.length) return;
+        showToast('Subiendo fondo...');
+        let ok = 0;
+        for(const f of files){
+          try{ await agregarFondo(f); ok++; }catch(e){ console.warn('Fondo no válido', e); }
+        }
+        await cargarFondosCustom();
+        showToast(ok ? (ok === 1 ? 'Fondo agregado' : ok + ' fondos agregados') : 'No se pudo leer la imagen');
+        paint();
+      }));
+      app.querySelectorAll('[data-del-fondo]').forEach(btn => btn.addEventListener('click', () => {
+        const id = btn.dataset.delFondo;
+        customConfirm('¿Eliminar este fondo?', async () => {
+          await eliminarFondo(id);
+          await cargarFondosCustom();
+          const quitado = 'custom:' + id;
+          proy = { ...proy,
+            fondoAudiencia: proy.fondoAudiencia === quitado ? 'negro' : proy.fondoAudiencia,
+            fondoMusicos: proy.fondoMusicos === quitado ? 'negro' : proy.fondoMusicos };
+          broadcast();
+        });
+      }));
+      const rngOscuro = app.querySelector('#rng-oscuro');
+      if(rngOscuro){
+        rngOscuro.addEventListener('input', () => { app.querySelector('#oscuro-val').textContent = rngOscuro.value + '%'; });
+        rngOscuro.addEventListener('change', () => { proy = { ...proy, fondoOscuro: +rngOscuro.value }; broadcast(); });
+      }
       app.querySelectorAll('[data-scale-down]').forEach(btn => btn.addEventListener('click', () => adjustPreviewScale(btn.dataset.scaleDown, -0.1)));
       app.querySelectorAll('[data-scale-up]').forEach(btn => btn.addEventListener('click', () => adjustPreviewScale(btn.dataset.scaleUp, 0.1)));
       app.querySelector('#btn-prev').addEventListener('click', prevSection);
@@ -2551,6 +2670,7 @@
     }
     proySaveState(culto.id, proy);
     paint();
+    cargarFondosCustom().then(() => paint());
   }
 
   let proyKioskChannel = null;
@@ -2629,8 +2749,15 @@
       const proy = proyLoadState(cultoId);
       const content = computeKioskContent(culto, list, proy, mode);
       const manualScale = loadProyManualScale(cultoId, mode, content.song, content.sec);
+      const fa = fondoAttrs(content.fondo, proy.fondoOscuro);
+      if(fa.faltante && !fondosIntentados.has(fa.id)){
+        fondosIntentados.add(fa.id);
+        cargarFondosCustom().then(() => paint());
+      }
       PROY_FONDOS.forEach(f => app.classList.remove('proy-bg-' + f.id));
-      app.classList.add('proy-bg-' + (content.fondo || 'negro'));
+      app.classList.remove('proy-bg-custom');
+      app.classList.add(fa.cls);
+      app.style.backgroundImage = fa.img;
       if(content.empty){
         app.innerHTML = `<div class="proy-kiosk-inner"><p class="proy-empty">Repertorio sin canciones.</p></div>`;
         return;
@@ -2660,6 +2787,7 @@
       app.querySelector('#btn-proy-size-up').addEventListener('click', () => adjustScale(0.1));
     }
     paint();
+    cargarFondosCustom().then(() => paint());
 
     const key = cultoId + ':' + mode;
     if(proyKioskChannelKey !== key){
