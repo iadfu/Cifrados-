@@ -804,7 +804,7 @@
   .pp-tono{ font-family:var(--font-mono); font-size:12px; font-weight:700; color:var(--accent-ink); background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:2px 7px; }
   .pp-pills{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
   .pp-nav{ display:flex; gap:10px; }
-  .pp-nav .btn{ flex:1; }
+  .pp-nav .btn{ flex:1; display:flex; align-items:center; justify-content:center; gap:8px; }
   .pp-textarea{ min-height:150px; width:100%; margin-bottom:10px; }
   .pp-toolbar{ display:flex; gap:8px; flex-wrap:wrap; }
   .pp-toolbar .btn{ flex:1 1 auto; display:flex; align-items:center; justify-content:center; gap:8px; }
@@ -837,6 +837,50 @@
     .proy-panel:has(.pp-fondos[open]) .pp-prev-box{ flex:none; display:block; container-type:inline-size; }
     .proy-panel:has(.pp-fondos[open]) .pp-prev-box .proy-preview{ width:100%; }
     .proy-panel:has(.pp-fondos[open]) .pp-fondos{ flex:1; min-height:0; overflow:auto; }
+  }
+
+  /* ---- Inicio: tablero ---- */
+  .inicio-view.dash{ align-items:stretch; text-align:left; gap:16px; }
+  .dash-head{ display:flex; flex-direction:column; gap:2px; }
+  .dash-saludo{ margin:0; font-size:12.5px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-soft); }
+  .dash-fecha{ margin:0; font-size:24px; font-weight:700; letter-spacing:-0.02em; }
+  .kpi-row{ display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:12px; }
+  .kpi{ display:flex; flex-direction:column; gap:2px; text-align:left; padding:14px 16px; background:var(--bg-elevated); border:1px solid var(--border); border-radius:12px; color:var(--ink); }
+  .kpi-btn:hover{ border-color:var(--accent); background:var(--accent-soft); }
+  .kpi-num{ font-size:28px; font-weight:700; letter-spacing:-0.02em; font-variant-numeric:tabular-nums; }
+  .kpi-lbl{ font-size:12.5px; color:var(--ink-soft); font-weight:600; }
+  .dash-grid{ display:grid; grid-template-columns:1fr; gap:16px; }
+  .dash-side{ display:flex; flex-direction:column; gap:16px; min-width:0; }
+  .dash-card{ background:var(--bg-elevated); border:1px solid var(--border); border-radius:12px; padding:16px 18px; min-width:0; }
+  .dash-prox-titulo{ margin:0; font-size:20px; font-weight:700; letter-spacing:-0.015em; }
+  .dash-prox-meta{ margin:4px 0 12px; font-size:13.5px; color:var(--ink-soft); }
+  .dash-aviso{ margin:0 0 12px; padding:9px 12px; border-radius:8px; background:var(--danger-soft); color:var(--danger); font-size:13px; font-weight:600; }
+  .dash-vacio{ margin:0; font-size:14px; color:var(--ink-soft); }
+  .dash-rows{ display:flex; flex-direction:column; gap:2px; }
+  .dash-row{ display:grid; grid-template-columns:28px minmax(0,1fr) auto auto; gap:10px; align-items:center; width:100%; min-height:42px; padding:8px 10px; border:none; border-radius:8px; background:transparent; color:var(--ink); font-size:14px; font-weight:600; text-align:left; }
+  .dash-row:hover{ background:var(--accent-soft); }
+  .dash-row:disabled{ opacity:0.55; cursor:not-allowed; }
+  .dash-row:disabled:hover{ background:transparent; }
+  .dash-bpm{ font-size:12.5px; color:var(--ink-soft); font-weight:600; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .dash-uso{ grid-template-columns:minmax(0,1fr) 56px auto; }
+  .dash-bar{ height:6px; border-radius:99px; background:var(--bg); overflow:hidden; }
+  .dash-bar i{ display:block; height:100%; background:var(--accent); border-radius:99px; }
+  .dash-falta{ grid-template-columns:minmax(0,1fr); gap:6px; }
+  .dash-chips{ display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-start; }
+  .dash-min{ display:flex; flex-direction:column; gap:16px; }
+  .dash-min .wsp-hero{ max-width:100%; width:100%; margin:0; }
+  .dash-min-txt .inicio-title{ text-align:left; margin-bottom:12px; }
+  .dash-grid2{ display:grid; grid-template-columns:1fr; gap:12px; }
+  @media (min-width:900px){
+    #cifrados-app .inicio-view.dash{ max-width:1120px; margin:0; padding:24px 32px 48px; }
+    .dash-grid{ grid-template-columns:minmax(0,7fr) minmax(0,5fr); align-items:start; }
+    .dash-min{ flex-direction:row; align-items:flex-start; gap:24px; }
+    .dash-min .wsp-hero{ flex:0 0 260px; width:260px; }
+    .dash-min-txt{ flex:1; min-width:0; }
+    .dash-grid2{ grid-template-columns:1fr 1fr; }
+    .dash-uso{ grid-template-columns:minmax(0,1fr) 90px auto; }
+    .dash-falta{ grid-template-columns:minmax(0,1fr) auto; }
+    .dash-chips{ justify-content:flex-end; }
   }
 
   @media print{
@@ -1585,6 +1629,27 @@
   }
 
   function renderInicio(){
+    const ymd = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    const ahora = new Date();
+    const hoy = ymd(ahora);
+    const saludo = ahora.getHours() < 12 ? 'Buenos días' : ahora.getHours() < 20 ? 'Buenas tardes' : 'Buenas noches';
+    const proximos = cultos.filter(c => c.fecha && c.fecha >= hoy).sort((a,b) => (a.fecha + (a.hora||'')).localeCompare(b.fecha + (b.hora||'')));
+    const prox = proximos[0] || null;
+    const dias = prox ? Math.round((new Date(prox.fecha + 'T00:00:00') - new Date(hoy + 'T00:00:00')) / 86400000) : 0;
+    const cuando = dias === 0 ? 'Hoy' : dias === 1 ? 'Mañana' : 'En ' + dias + ' días';
+    const proxSongs = prox ? prox.songIds.map(id => songs.find(x => x.id === id)).filter(Boolean) : [];
+    const proxEspera = proxSongs.filter(x => x.enEspera).length;
+    const enEspera = songs.filter(x => x.enEspera);
+    const usos = {};
+    cultos.forEach(c => (c.songIds || []).forEach(id => { usos[id] = (usos[id] || 0) + 1; }));
+    const masUsadas = songs.filter(x => usos[x.id]).sort((a,b) => usos[b.id] - usos[a.id] || a.titulo.localeCompare(b.titulo, 'es')).slice(0, 5);
+    const maxUso = masUsadas.length ? usos[masUsadas[0].id] : 1;
+    const porCompletar = songs.map(x => ({ x, faltas: [
+        x.enEspera ? 'En espera' : null,
+        (!x.tono || x.tono === '-') ? 'Sin tono' : null,
+        !x.tempo ? 'Sin BPM' : null ].filter(Boolean) }))
+      .filter(f => f.faltas.length)
+      .sort((a,b) => b.faltas.length - a.faltas.length || a.x.titulo.localeCompare(b.x.titulo, 'es'));
     app.innerHTML = `
       <div class="topbar">
         <div class="topbar-row">
@@ -1593,24 +1658,87 @@
         </div>
         ${tabBarHtml('inicio')}
       </div>
-      <div class="inicio-view">
-        ${WORSHIP_ANIM_SVG}
-        <h2 class="inicio-title">Ministerio de Alabanza</h2>
-        <div class="mv-card">
-          <h2>Visión</h2>
-          <ul class="mv-list">
-            <li><b>Adoración apasionada:</b> Ver a las personas adorar a Cristo con gran fervor y una profunda sed por Su Palabra.</li>
-            <li><b>Comunión integral:</b> Fomentar una relación íntima con Dios que se note en la vida de cada día.</li>
-            <li><b>Equilibrio espiritual:</b> Lograr que la adoración colectiva combine el gozo entusiasta con la reverencia santa hacia Dios.</li>
-          </ul>
+      <div class="inicio-view dash">
+        <div class="dash-head">
+          <p class="dash-saludo">${saludo}</p>
+          <h2 class="dash-fecha">${escapeHtml(formatFecha(hoy))}</h2>
         </div>
+        <div class="kpi-row">
+          <div class="kpi"><span class="kpi-num">${songs.length - enEspera.length}</span><span class="kpi-lbl">Cifrados disponibles</span></div>
+          ${isLider() ? `<button type="button" class="kpi kpi-btn" data-go="list"><span class="kpi-num">${enEspera.length}</span><span class="kpi-lbl">Cifrados en espera</span></button>` : ''}
+          <button type="button" class="kpi kpi-btn" data-go="cultos"><span class="kpi-num">${proximos.length}</span><span class="kpi-lbl">Repertorios próximos</span></button>
+        </div>
+        <div class="dash-grid">
+          <section class="dash-card dash-prox">
+            <p class="pp-title"><span>Próximo repertorio</span>${prox ? `<span class="status status-listo">${cuando}</span>` : ''}</p>
+            ${prox ? `
+              <h3 class="dash-prox-titulo">${escapeHtml(prox.nombre || 'Culto')}</h3>
+              <p class="dash-prox-meta">${escapeHtml(formatFecha(prox.fecha))}${prox.hora ? ' · ' + escapeHtml(formatHora(prox.hora)) : ''} · ${proxSongs.length} canción${proxSongs.length === 1 ? '' : 'es'}</p>
+              ${proxEspera && isLider() ? `<p class="dash-aviso">${proxEspera} canción${proxEspera === 1 ? '' : 'es'} de este repertorio sigue${proxEspera === 1 ? '' : 'n'} en espera.</p>` : ''}
+              <div class="dash-rows">
+                ${proxSongs.length ? proxSongs.map((x,i) => `
+                  <button type="button" class="dash-row" data-go-song="${x.id}" data-culto="${prox.id}" ${!isLider() && x.enEspera ? 'disabled' : ''}>
+                    <span class="pp-num">${i+1}</span>
+                    <span class="pp-name">${escapeHtml(x.titulo)}</span>
+                    <span class="dash-bpm">${x.enEspera ? '<span class="status status-espera">En espera</span>' : (x.tempo ? escapeHtml(x.tempo) + ' BPM' : '')}</span>
+                    <span class="pp-tono">${escapeHtml(transposeChordToken(x.tono || '-', (prox.transposes && prox.transposes[x.id]) || 0))}</span>
+                  </button>
+                `).join('') : '<p class="dash-vacio">Este repertorio aún no tiene canciones.</p>'}
+              </div>
+              <div class="pp-nav" style="margin-top:14px;">
+                <button type="button" class="btn" data-go-culto="${prox.id}">Abrir repertorio</button>
+                ${proxSongs.length ? `<button type="button" class="btn btn-primary" data-go-proy="${prox.id}">${ICONS.proyector} Proyectar</button>` : ''}
+              </div>
+            ` : `
+              <p class="dash-vacio">No hay repertorios próximos.</p>
+              ${isLider() ? '<div class="pp-nav" style="margin-top:6px;"><button type="button" class="btn btn-primary" data-go="culto-form">Crear repertorio</button></div>' : ''}
+            `}
+          </section>
+          <div class="dash-side">
+            <section class="dash-card">
+              <p class="pp-title"><span>Más utilizadas</span></p>
+              ${masUsadas.length ? `<div class="dash-rows">${masUsadas.map(x => `
+                <button type="button" class="dash-row dash-uso" data-go-song="${x.id}" ${!isLider() && x.enEspera ? 'disabled' : ''}>
+                  <span class="pp-name">${escapeHtml(x.titulo)}</span>
+                  <span class="dash-bar"><i style="width:${Math.round(usos[x.id] / maxUso * 100)}%"></i></span>
+                  <span class="dash-bpm">${usos[x.id]} ${usos[x.id] === 1 ? 'vez' : 'veces'}</span>
+                </button>`).join('')}</div>` : '<p class="dash-vacio">Aún no hay repertorios con canciones.</p>'}
+            </section>
+            ${isLider() ? `
+            <section class="dash-card">
+              <p class="pp-title"><span>Cifrados por completar</span><span>${porCompletar.length}</span></p>
+              ${porCompletar.length ? `<div class="dash-rows">${porCompletar.slice(0, 6).map(f => `
+                <button type="button" class="dash-row dash-falta" data-go-song="${f.x.id}">
+                  <span class="pp-name">${escapeHtml(f.x.titulo)}</span>
+                  <span class="dash-chips">${f.faltas.map(t => `<span class="status ${t === 'En espera' ? 'status-espera' : 'status-neutro'}">${t}</span>`).join('')}</span>
+                </button>`).join('')}</div>
+                ${porCompletar.length > 6 ? `<button type="button" class="link-btn" data-go="list" style="margin-top:10px;">Ver todos en Cifrados</button>` : ''}` : '<p class="dash-vacio">Todos los cifrados están completos.</p>'}
+            </section>` : ''}
+          </div>
+        </div>
+        <div class="dash-min">
+          ${WORSHIP_ANIM_SVG}
+          <div class="dash-min-txt">
+            <h2 class="inicio-title">Ministerio de Alabanza</h2>
+            <div class="dash-grid2">
         <div class="mv-card">
-          <h2>Misión</h2>
-          <ul class="mv-list">
-            <li><b>Cantar la verdad:</b> Proveer canciones con bases bíblicas sólidas que proclamen los atributos de Dios y la obra redentora de Jesucristo.</li>
-            <li><b>Edificar la iglesia:</b> Servir a la congregación facilitando recursos musicales centrados en el Evangelio.</li>
-            <li><b>Transformar vidas:</b> Contribuir a que los creyentes maduren y reflejen el carácter de Cristo a través del canto y la verdad de las Escrituras.</li>
-          </ul>
+                <h2>Visión</h2>
+                <ul class="mv-list">
+                  <li><b>Adoración apasionada:</b> Ver a las personas adorar a Cristo con gran fervor y una profunda sed por Su Palabra.</li>
+                  <li><b>Comunión integral:</b> Fomentar una relación íntima con Dios que se note en la vida de cada día.</li>
+                  <li><b>Equilibrio espiritual:</b> Lograr que la adoración colectiva combine el gozo entusiasta con la reverencia santa hacia Dios.</li>
+                </ul>
+              </div>
+              <div class="mv-card">
+                <h2>Misión</h2>
+                <ul class="mv-list">
+                  <li><b>Cantar la verdad:</b> Proveer canciones con bases bíblicas sólidas que proclamen los atributos de Dios y la obra redentora de Jesucristo.</li>
+                  <li><b>Edificar la iglesia:</b> Servir a la congregación facilitando recursos musicales centrados en el Evangelio.</li>
+                  <li><b>Transformar vidas:</b> Contribuir a que los creyentes maduren y reflejen el carácter de Cristo a través del canto y la verdad de las Escrituras.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
         </div>
         ${isLider() && cachedMembers && cachedMembers.some(m => m.rol === 'pendiente') ? `
           <div class="mv-card">
@@ -1647,6 +1775,14 @@
     `;
     wireTabs();
     wireRoleBadge(renderInicio);
+    app.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => go(b.dataset.go)));
+    app.querySelectorAll('[data-go-culto]').forEach(b => b.addEventListener('click', () => go('culto-detail', b.dataset.goCulto)));
+    app.querySelectorAll('[data-go-proy]').forEach(b => b.addEventListener('click', () => go('proyeccion-control', b.dataset.goProy)));
+    app.querySelectorAll('[data-go-song]').forEach(b => b.addEventListener('click', () => {
+      const c = b.dataset.culto ? cultos.find(x => x.id === b.dataset.culto) : null;
+      if(c) go('detail', b.dataset.goSong, { viewOnly:true, forcedTranspose:(c.transposes && c.transposes[b.dataset.goSong]) || 0, returnView:'inicio' });
+      else go('detail', b.dataset.goSong, { returnView:'inicio' });
+    }));
     app.querySelectorAll('[data-approve]').forEach(btn => {
       btn.addEventListener('click', () => approveMember(btn.dataset.approve, btn.dataset.rol));
     });
