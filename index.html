@@ -685,7 +685,6 @@
     .tab-btn.active{ background:rgba(255,255,255,0.14); color:#fff; border:none; }
     #tab-inicio{ --ico:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z'/%3E%3C/svg%3E"); }
     #tab-cifrados{ --ico:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 18V5l12-2v13'/%3E%3Ccircle cx='6' cy='18' r='3'/%3E%3Ccircle cx='18' cy='16' r='3'/%3E%3C/svg%3E"); }
-    #tab-repertorio{ --ico:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2'/%3E%3Cpath d='M16 2v4M8 2v4M3 10h18'/%3E%3C/svg%3E"); }
     #tab-proyeccion{ --ico:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2' y='4' width='20' height='13' rx='2'/%3E%3Cpath d='M8 21h8M12 17v4'/%3E%3C/svg%3E"); }
     main{ padding:24px 32px 100px; }
     .fab{ left:auto; right:32px; transform:none; bottom:28px; }
@@ -749,6 +748,14 @@
   .status-listo{ color:var(--success); border:1px solid currentColor; padding:2px 9px; }
   .ref-btn{ display:inline-flex; align-items:center; gap:6px; min-height:34px; padding:0 12px; border:1px solid var(--border); border-radius:8px; background:var(--bg-elevated); color:var(--accent-ink); font-size:12.5px; font-weight:600; text-decoration:none; transition:background 0.15s ease, border-color 0.15s ease; }
   .ref-btn:hover{ background:var(--accent-soft); border-color:var(--accent); }
+  .song-list.is-cultos .song-row{ display:flex; flex-direction:column; gap:6px; }
+  .song-list.is-cultos .song-row .cell-link{ display:flex; gap:8px; }
+  .song-list.is-cultos .song-row .cell-link .ref-btn{ flex:1; justify-content:center; }
+  .ref-btn-primary{ background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
+  .ref-btn-primary:hover{ background:var(--accent); filter:brightness(1.1); }
+  .ref-btn:disabled{ opacity:0.5; cursor:not-allowed; }
+  .ref-btn:disabled:hover{ background:var(--bg-elevated); border-color:var(--border); }
+  .ref-btn-primary:disabled:hover{ background:var(--accent); border-color:var(--accent); }
   .ref-btn:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
   .icon-btn svg, .action-pill svg, .ref-btn svg{ stroke-width:1.75; }
   .wsp-hero-img{ animation:none; }
@@ -756,7 +763,9 @@
   @media (min-width:900px){
     :root{ --col-link:132px; }
     #cifrados-app .song-list.is-cifrados{ --cols-main:minmax(0,2.2fr) minmax(0,1.6fr) 64px 76px 72px 108px; }
-    #cifrados-app .song-list.is-cultos{ --cols-main:minmax(0,2fr) minmax(0,1.8fr) 96px 96px 124px; }
+    #cifrados-app .song-list.is-cultos{ --cols-main:minmax(0,2fr) minmax(0,1.8fr) 96px 96px 124px; --col-link:230px; }
+    #cifrados-app .song-list.is-cultos .song-row .cell-link{ display:flex; gap:8px; justify-content:center; padding:0 12px; }
+    #cifrados-app .song-list.is-cultos .song-row .cell-link .ref-btn{ flex:0 0 auto; }
     .m-only{ display:none !important; }
     #cifrados-app .song-list.is-tabla .list-head{ display:grid; grid-template-columns:minmax(0,1fr) var(--col-link); gap:0; padding:0; }
     #cifrados-app .song-list.is-tabla .hcols{ display:grid; grid-template-columns:var(--cols-main); gap:16px; padding:12px 20px; }
@@ -816,9 +825,6 @@
   .proy-preview .proy-body{ font-size:calc(7cqh * var(--proy-scale, 1)); overflow:hidden; }
   .proy-preview .proy-meta-badge{ top:2.5cqh; right:2.5cqw; font-size:3cqh; gap:2cqw; }
   .proy-preview .proy-empty{ font-size:4cqh; }
-  .pp-fondos > summary{ cursor:pointer; font-size:12.5px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:var(--ink-soft); min-height:28px; display:flex; align-items:center; }
-  .pp-fondos[open] > summary{ margin-bottom:12px; }
-  .pp-fondos-body{ display:flex; flex-direction:column; gap:16px; }
   @media (min-width:1100px){
     #cifrados-app:has(.proy-panel){ height:100vh; overflow:hidden; }
     .proy-panel{ display:grid; grid-template-columns:minmax(340px,5fr) 7fr; gap:16px; flex:1; min-height:0; overflow:hidden; padding:16px 20px 20px; }
@@ -833,15 +839,14 @@
     .pp-prev{ display:flex; flex-direction:column; min-height:0; }
     .pp-prev-box{ flex:1; min-height:0; display:flex; align-items:center; justify-content:center; container-type:size; }
     .pp-prev-box .proy-preview{ width:min(100cqw, calc(100cqh * 16 / 9)); }
-    .proy-panel:has(.pp-fondos[open]) .pp-previews{ flex:none; grid-template-columns:1fr 1fr; grid-template-rows:none; }
-    .proy-panel:has(.pp-fondos[open]) .pp-prev-box{ flex:none; display:block; container-type:inline-size; }
-    .proy-panel:has(.pp-fondos[open]) .pp-prev-box .proy-preview{ width:100%; }
-    .proy-panel:has(.pp-fondos[open]) .pp-fondos{ flex:1; min-height:0; overflow:auto; }
   }
 
   /* ---- Inicio: tablero ---- */
   .inicio-view.dash{ align-items:stretch; text-align:left; gap:16px; }
-  .dash-head{ display:flex; flex-direction:column; gap:2px; }
+  .dash-head{ display:flex; flex-direction:column; gap:12px; }
+  .dash-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+  .dash-actions .btn{ flex:0 1 auto; display:inline-flex; align-items:center; justify-content:center; gap:6px; }
+  .dash-actions .btn svg{ width:16px; height:16px; }
   .dash-saludo{ margin:0; font-size:12.5px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-soft); }
   .dash-fecha{ margin:0; font-size:24px; font-weight:700; letter-spacing:-0.02em; }
   .kpi-row{ display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:12px; }
@@ -865,23 +870,24 @@
   .dash-uso{ grid-template-columns:minmax(0,1fr) 56px auto; }
   .dash-bar{ height:6px; border-radius:99px; background:var(--bg); overflow:hidden; }
   .dash-bar i{ display:block; height:100%; background:var(--accent); border-radius:99px; }
-  .dash-falta{ grid-template-columns:minmax(0,1fr); gap:6px; }
-  .dash-chips{ display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-start; }
   .dash-min{ display:flex; flex-direction:column; gap:16px; }
-  .dash-min .wsp-hero{ max-width:100%; width:100%; margin:0; }
   .dash-min-txt .inicio-title{ text-align:left; margin-bottom:12px; }
   .dash-grid2{ display:grid; grid-template-columns:1fr; gap:12px; }
   @media (min-width:900px){
+    .dash-head{ flex-direction:row; align-items:flex-end; justify-content:space-between; }
     #cifrados-app .inicio-view.dash{ max-width:1120px; margin:0; padding:24px 32px 48px; }
     .dash-grid{ grid-template-columns:minmax(0,7fr) minmax(0,5fr); align-items:start; }
-    .dash-min{ flex-direction:row; align-items:flex-start; gap:24px; }
-    .dash-min .wsp-hero{ flex:0 0 260px; width:260px; }
-    .dash-min-txt{ flex:1; min-width:0; }
+      .dash-min-txt{ flex:1; min-width:0; }
     .dash-grid2{ grid-template-columns:1fr 1fr; }
     .dash-uso{ grid-template-columns:minmax(0,1fr) 90px auto; }
-    .dash-falta{ grid-template-columns:minmax(0,1fr) auto; }
-    .dash-chips{ justify-content:flex-end; }
-  }
+      }
+
+  .btn-fondo{ display:inline-flex; align-items:center; gap:8px; min-height:32px; padding:0 12px 0 6px; border:1px solid var(--border); border-radius:8px; background:var(--bg-elevated); color:var(--ink); font-size:12.5px; font-weight:600; }
+  .btn-fondo:hover, .btn-fondo[aria-expanded="true"], .pp-toolbar .btn[aria-expanded="true"]{ border-color:var(--accent); background:var(--accent-soft); color:var(--accent-ink); }
+  .btn-fondo .fondo-thumb{ width:26px; height:18px; padding:0; border-radius:4px; display:block; flex:none; }
+  .pp-flotante{ position:fixed; right:20px; bottom:20px; width:min(620px, calc(100vw - 40px)); max-height:min(62vh, 560px); overflow:auto; z-index:40; background:var(--bg-elevated); border:1px solid var(--border); border-radius:14px; padding:14px 18px 18px; box-shadow:0 14px 44px rgba(15,27,58,0.28); }
+  .pp-flotante.pp-musicos{ top:84px; bottom:auto; }
+  .pp-flotante-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
 
   @media print{
     *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; color-adjust:exact; }
@@ -1365,6 +1371,7 @@
     mail: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>',
     proyector: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>',
     crown: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M3 8l4 3 5-6 5 6 4-3-2 11H5L3 8Z"/></svg>',
+    cerrar: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>',
     external: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M10 14L21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>',
     eye: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>'
   };
@@ -1392,7 +1399,7 @@
     const hoy = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
     return c.fecha < hoy ? { txt:'Realizado', cls:'status-neutro' } : { txt:'Próximo', cls:'status-listo' };
   }
-  function filaCulto(c, accion, disabled){
+  function filaCulto(c, acciones, disabled){
     const e = estadoCulto(c);
     return `
               <li class="song-row">
@@ -1407,7 +1414,7 @@
                   <span class="cell cell-estado"><span class="status ${e.cls}">${e.txt}</span></span>
                   <span class="tono-badge m-only">${c.songIds.length}</span>
                 </button>
-                <span class="cell cell-link"><button type="button" class="ref-btn" data-open-culto="${c.id}" ${disabled ? 'disabled' : ''}>${accion}</button></span>
+                <span class="cell cell-link">${acciones}</span>
               </li>`;
   }
 
@@ -1427,6 +1434,7 @@
 
   function go(view, id, opts){
     opts = opts || {};
+    if(view === 'cultos') view = 'proyeccion';
     if((view === 'form' || view === 'share' || view === 'culto-form') && !isLider()) view = 'list';
     if(view === 'detail' && !isLider()){
       const s = songs.find(x => x.id === id);
@@ -1452,7 +1460,6 @@
       <div class="tab-bar">
         <button type="button" class="tab-btn ${active==='inicio'?'active':''}" id="tab-inicio">Inicio</button>
         <button type="button" class="tab-btn ${active==='cifrados'?'active':''}" id="tab-cifrados">Cifrados</button>
-        <button type="button" class="tab-btn ${active==='repertorio'?'active':''}" id="tab-repertorio">Repertorio</button>
         <button type="button" class="tab-btn ${active==='proyeccion'?'active':''}" id="tab-proyeccion">Proyección</button>
       </div>
     `;
@@ -1460,7 +1467,6 @@
   function wireTabs(){
     app.querySelector('#tab-inicio').addEventListener('click', () => go('inicio'));
     app.querySelector('#tab-cifrados').addEventListener('click', () => go('list'));
-    app.querySelector('#tab-repertorio').addEventListener('click', () => go('cultos'));
     app.querySelector('#tab-proyeccion').addEventListener('click', () => go('proyeccion'));
   }
 
@@ -1493,7 +1499,6 @@
     else if(state.view === 'detail') renderDetail();
     else if(state.view === 'form') renderForm();
     else if(state.view === 'share') renderShare();
-    else if(state.view === 'cultos') renderCultos();
     else if(state.view === 'culto-detail') renderCultoDetail();
     else if(state.view === 'culto-form') renderCultoForm();
     else if(state.view === 'proyeccion') renderProyeccionHome();
@@ -1644,12 +1649,6 @@
     cultos.forEach(c => (c.songIds || []).forEach(id => { usos[id] = (usos[id] || 0) + 1; }));
     const masUsadas = songs.filter(x => usos[x.id]).sort((a,b) => usos[b.id] - usos[a.id] || a.titulo.localeCompare(b.titulo, 'es')).slice(0, 5);
     const maxUso = masUsadas.length ? usos[masUsadas[0].id] : 1;
-    const porCompletar = songs.map(x => ({ x, faltas: [
-        x.enEspera ? 'En espera' : null,
-        (!x.tono || x.tono === '-') ? 'Sin tono' : null,
-        !x.tempo ? 'Sin BPM' : null ].filter(Boolean) }))
-      .filter(f => f.faltas.length)
-      .sort((a,b) => b.faltas.length - a.faltas.length || a.x.titulo.localeCompare(b.x.titulo, 'es'));
     app.innerHTML = `
       <div class="topbar">
         <div class="topbar-row">
@@ -1660,13 +1659,20 @@
       </div>
       <div class="inicio-view dash">
         <div class="dash-head">
-          <p class="dash-saludo">${saludo}</p>
-          <h2 class="dash-fecha">${escapeHtml(formatFecha(hoy))}</h2>
+          <div>
+            <p class="dash-saludo">${saludo}</p>
+            <h2 class="dash-fecha">${escapeHtml(formatFecha(hoy))}</h2>
+          </div>
+          ${isLider() ? `
+          <div class="dash-actions">
+            <button type="button" class="btn btn-primary" data-go="culto-form">${ICONS.plus} Nuevo repertorio</button>
+            <button type="button" class="btn" data-go="form">${ICONS.plus} Nuevo cifrado</button>
+          </div>` : ''}
         </div>
         <div class="kpi-row">
           <div class="kpi"><span class="kpi-num">${songs.length - enEspera.length}</span><span class="kpi-lbl">Cifrados disponibles</span></div>
           ${isLider() ? `<button type="button" class="kpi kpi-btn" data-go="list"><span class="kpi-num">${enEspera.length}</span><span class="kpi-lbl">Cifrados en espera</span></button>` : ''}
-          <button type="button" class="kpi kpi-btn" data-go="cultos"><span class="kpi-num">${proximos.length}</span><span class="kpi-lbl">Repertorios próximos</span></button>
+          <button type="button" class="kpi kpi-btn" data-go="proyeccion"><span class="kpi-num">${proximos.length}</span><span class="kpi-lbl">Repertorios próximos</span></button>
         </div>
         <div class="dash-grid">
           <section class="dash-card dash-prox">
@@ -1704,20 +1710,9 @@
                   <span class="dash-bpm">${usos[x.id]} ${usos[x.id] === 1 ? 'vez' : 'veces'}</span>
                 </button>`).join('')}</div>` : '<p class="dash-vacio">Aún no hay repertorios con canciones.</p>'}
             </section>
-            ${isLider() ? `
-            <section class="dash-card">
-              <p class="pp-title"><span>Cifrados por completar</span><span>${porCompletar.length}</span></p>
-              ${porCompletar.length ? `<div class="dash-rows">${porCompletar.slice(0, 6).map(f => `
-                <button type="button" class="dash-row dash-falta" data-go-song="${f.x.id}">
-                  <span class="pp-name">${escapeHtml(f.x.titulo)}</span>
-                  <span class="dash-chips">${f.faltas.map(t => `<span class="status ${t === 'En espera' ? 'status-espera' : 'status-neutro'}">${t}</span>`).join('')}</span>
-                </button>`).join('')}</div>
-                ${porCompletar.length > 6 ? `<button type="button" class="link-btn" data-go="list" style="margin-top:10px;">Ver todos en Cifrados</button>` : ''}` : '<p class="dash-vacio">Todos los cifrados están completos.</p>'}
-            </section>` : ''}
           </div>
         </div>
         <div class="dash-min">
-          ${WORSHIP_ANIM_SVG}
           <div class="dash-min-txt">
             <h2 class="inicio-title">Ministerio de Alabanza</h2>
             <div class="dash-grid2">
@@ -2268,40 +2263,6 @@
     });
   }
 
-  function renderCultos(){
-    const sorted = [...cultos].sort((a,b) => (a.fecha+ (a.hora||'')).localeCompare(b.fecha + (b.hora||'')));
-    app.innerHTML = `
-      <div class="topbar">
-        <div class="topbar-row">
-          <h1 class="app-title">Repertorio</h1>
-          <button class="role-badge ${isLider() ? 'is-lider' : ''}" id="btn-role">${isLider() ? ICONS.crown + ' Líder' : ICONS.eye + ' Músico'}</button>
-        </div>
-        ${tabBarHtml('repertorio')}
-      </div>
-      <main>
-        ${sorted.length === 0 ? `
-          <div class="empty-state">
-            ${ICONS.music}
-            <p>Aún no hay repertorios armados.</p>
-          </div>
-        ` : `
-          <ul class="song-list is-tabla is-cultos">
-            <li class="list-head" aria-hidden="true"><div class="hcols"><span>Repertorio</span><span>Fecha</span><span>Hora</span><span>Canciones</span><span>Estado</span></div><span>Acción</span></li>
-            ${sorted.map(c => filaCulto(c, 'Ver', false)).join('')}
-          </ul>
-        `}
-      </main>
-      ${isLider() ? `<div class="fab"><div class="fab-inner"><button id="btn-new-culto" aria-label="Nuevo repertorio">${ICONS.plus}</button></div></div>` : ''}
-      ${pinModalHtml()}
-    `;
-    if(isLider()) app.querySelector('#btn-new-culto').addEventListener('click', () => go('culto-form', null));
-    app.querySelectorAll('[data-open-culto]').forEach(btn => {
-      btn.addEventListener('click', () => go('culto-detail', btn.dataset.openCulto));
-    });
-    wireTabs();
-    wireRoleBadge(renderCultos);
-  }
-
   function renderCultoDetail(){
     const culto = cultos.find(c => c.id === state.currentId);
     if(!culto){ go('cultos'); return; }
@@ -2549,12 +2510,13 @@
         ${sorted.length === 0 ? `
           <div class="empty-state">
             ${ICONS.proyector}
-            <p>Aún no hay repertorios para proyectar. Créalos primero en Repertorio.</p>
+            <p>Aún no hay repertorios. ${isLider() ? 'Crea el primero desde Inicio.' : 'Tu líder los irá agregando.'}</p>
+            ${isLider() ? '<button type="button" class="btn btn-primary" data-go="inicio" style="flex:none; margin-top:6px;">Ir a Inicio</button>' : ''}
           </div>
         ` : `
           <ul class="song-list is-tabla is-cultos">
             <li class="list-head" aria-hidden="true"><div class="hcols"><span>Repertorio</span><span>Fecha</span><span>Hora</span><span>Canciones</span><span>Estado</span></div><span>Acción</span></li>
-            ${sorted.map(c => filaCulto(c, 'Proyectar', c.songIds.length === 0)).join('')}
+            ${sorted.map(c => filaCulto(c, `<button type="button" class="ref-btn" data-ver-culto="${c.id}">Ver</button><button type="button" class="ref-btn ref-btn-primary" data-open-culto="${c.id}" ${c.songIds.length === 0 ? 'disabled' : ''}>${ICONS.proyector} Proyectar</button>`, c.songIds.length === 0)).join('')}
           </ul>
         `}
       </main>
@@ -2562,6 +2524,10 @@
     app.querySelectorAll('[data-open-culto]:not([disabled])').forEach(btn => {
       btn.addEventListener('click', () => go('proyeccion-control', btn.dataset.openCulto));
     });
+    app.querySelectorAll('[data-ver-culto]').forEach(btn => {
+      btn.addEventListener('click', () => go('culto-detail', btn.dataset.verCulto));
+    });
+    app.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => go(b.dataset.go)));
     wireTabs();
     wireRoleBadge(renderProyeccionHome);
   }
@@ -2635,7 +2601,7 @@
       channel.postMessage(proy);
       paint();
     }
-    let fondosAbierto = false;
+    let panelAbierto = null;
     let screensList = null;
     let selectedScreen = { audiencia: null, musicos: null };
     async function chooseScreens(){
@@ -2671,6 +2637,42 @@
     function paint(){
       const song = currentSong();
       const secs = currentSecciones();
+      const panelHtml = () => {
+        if(!panelAbierto) return '';
+        const titulos = { audiencia:'Fondo · Audiencia', musicos:'Fondo · Músicos', pantallas:'Pantallas de salida' };
+        let cuerpo;
+        if(panelAbierto === 'pantallas'){
+          cuerpo = ('getScreenDetails' in window) ? `
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+              <button type="button" class="btn" id="btn-choose-screens" style="flex:none;">Detectar pantallas</button>
+              ${screensList ? ['audiencia','musicos'].map(m => `
+                <label style="font-size:13px; color:var(--ink-soft); display:flex; align-items:center; gap:6px;">
+                  ${m === 'audiencia' ? 'Audiencia' : 'Músicos'}:
+                  <select data-screen-select="${m}" style="padding:6px 8px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--ink);">
+                    ${screensList.map((sc,i) => `<option value="${i}" ${selectedScreen[m]===i?'selected':''}>Pantalla ${i+1}${sc.isPrimary?' (principal)':''} — ${sc.width}×${sc.height}</option>`).join('')}
+                  </select>
+                </label>
+              `).join('') : '<span style="font-size:12.5px; color:var(--ink-soft);">Detecta tus pantallas conectadas para que cada ventana se abra directo en la correcta.</span>'}
+            </div>` : '<p class="dash-vacio">Tu navegador no permite elegir la pantalla automáticamente. Usa Chrome o arrastra cada ventana a su pantalla.</p>';
+        } else {
+          cuerpo = `
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">${fondoPickerHtml(panelAbierto, panelAbierto === 'audiencia' ? proy.fondoAudiencia : proy.fondoMusicos)}</div>
+            ${fondosCustom.size ? `
+              <label style="display:flex; align-items:center; gap:12px; margin-top:14px; font-size:13px; color:var(--ink-soft);">
+                Oscurecer fondos con imagen
+                <input type="range" id="rng-oscuro" min="0" max="80" step="5" value="${proy.fondoOscuro}" style="flex:1; max-width:260px;">
+                <b id="oscuro-val" style="color:var(--ink); min-width:36px;">${proy.fondoOscuro}%</b>
+              </label>` : ''}`;
+        }
+        return `
+          <div class="pp-flotante pp-${panelAbierto}" role="dialog" aria-label="${titulos[panelAbierto]}">
+            <div class="pp-flotante-head">
+              <p class="pp-title" style="margin:0;"><span>${titulos[panelAbierto]}</span></p>
+              <button type="button" class="icon-btn" data-cerrar-panel aria-label="Cerrar">${ICONS.cerrar}</button>
+            </div>
+            ${cuerpo}
+          </div>`;
+      };
       const previewHtml = m => {
         const c = computeKioskContent(culto, list, proy, m);
         const mScale = loadProyManualScale(culto.id, m, c.song, c.sec);
@@ -2688,7 +2690,8 @@
           <div class="pp-prev">
             <div class="pp-prev-head">
               <p class="proy-preview-label" style="margin:0;">${m === 'audiencia' ? 'Salida Audiencia' : 'Salida Músicos'}</p>
-              <div style="display:flex; gap:4px;">
+              <div style="display:flex; gap:6px; align-items:center;">
+                <button type="button" class="btn-fondo" data-abrir-panel="${m}" aria-expanded="${panelAbierto === m}"><span class="fondo-thumb proy-fondo-swatch ${fa.cls}" style="${fa.img ? 'background-image:' + fa.img + ';' : ''}"></span>Fondo</button>
                 <button type="button" class="icon-btn proy-preview-size-btn" data-scale-down="${m}" aria-label="Letra más chica" style="width:32px;height:32px;font-size:12px;font-weight:700;border:1px solid var(--border);">A−</button>
                 <button type="button" class="icon-btn proy-preview-size-btn" data-scale-up="${m}" aria-label="Letra más grande" style="width:32px;height:32px;font-size:12px;font-weight:700;border:1px solid var(--border);">A+</button>
               </div>
@@ -2756,50 +2759,22 @@
               <button type="button" class="btn" id="btn-open-audiencia">${ICONS.proyector} Vista Audiencia</button>
               <button type="button" class="btn" id="btn-open-musicos">${ICONS.proyector} Vista Músicos</button>
               <button type="button" class="btn ${proy.blackout ? 'btn-danger' : ''}" id="btn-blackout">${proy.blackout ? 'Quitar pantalla negra' : 'Pantalla en negro'}</button>
+              <button type="button" class="btn" data-abrir-panel="pantallas" aria-expanded="${panelAbierto === 'pantallas'}">Pantallas</button>
             </div>
             <div class="pp-previews">
               ${previewHtml('audiencia')}
               ${previewHtml('musicos')}
             </div>
-            <details class="pp-card pp-fondos" ${fondosAbierto ? 'open' : ''}>
-              <summary>Fondos y pantallas de salida</summary>
-              <div class="pp-fondos-body">
-                ${'getScreenDetails' in window ? `
-                  <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-                    <button type="button" class="btn" id="btn-choose-screens" style="flex:none;">Elegir pantallas de salida</button>
-                    ${screensList ? ['audiencia','musicos'].map(m => `
-                      <label style="font-size:13px; color:var(--ink-soft); display:flex; align-items:center; gap:6px;">
-                        ${m === 'audiencia' ? 'Audiencia' : 'Músicos'}:
-                        <select data-screen-select="${m}" style="padding:4px 6px; border-radius:6px; border:1px solid var(--border); background:var(--bg); color:var(--ink);">
-                          ${screensList.map((sc,i) => `<option value="${i}" ${selectedScreen[m]===i?'selected':''}>Pantalla ${i+1}${sc.isPrimary?' (principal)':''} — ${sc.width}×${sc.height}</option>`).join('')}
-                        </select>
-                      </label>
-                    `).join('') : '<span style="font-size:12.5px; color:var(--ink-soft);">Detecta tus pantallas conectadas para que cada ventana se abra directo en la correcta.</span>'}
-                  </div>
-                ` : ''}
-                <div>
-                  <p class="pp-title"><span>Fondo · Audiencia</span></p>
-                  <div style="display:flex; gap:10px; flex-wrap:wrap;">${fondoPickerHtml('audiencia', proy.fondoAudiencia)}</div>
-                </div>
-                <div>
-                  <p class="pp-title"><span>Fondo · Músicos</span></p>
-                  <div style="display:flex; gap:10px; flex-wrap:wrap;">${fondoPickerHtml('musicos', proy.fondoMusicos)}</div>
-                  ${fondosCustom.size ? `
-                    <label style="display:flex; align-items:center; gap:12px; margin-top:14px; font-size:13px; color:var(--ink-soft);">
-                      Oscurecer fondos con imagen
-                      <input type="range" id="rng-oscuro" min="0" max="80" step="5" value="${proy.fondoOscuro}" style="flex:1; max-width:260px;">
-                      <b id="oscuro-val" style="color:var(--ink); min-width:36px;">${proy.fondoOscuro}%</b>
-                    </label>
-                  ` : ''}
-                </div>
-              </div>
-            </details>
+            ${panelHtml()}
           </section>
         </main>
       `;
       app.querySelector('#btn-back').addEventListener('click', () => go('culto-detail', culto.id));
-      const detFondos = app.querySelector('.pp-fondos');
-      detFondos.addEventListener('toggle', () => { fondosAbierto = detFondos.open; });
+      app.querySelectorAll('[data-abrir-panel]').forEach(b => b.addEventListener('click', () => {
+        panelAbierto = panelAbierto === b.dataset.abrirPanel ? null : b.dataset.abrirPanel;
+        paint();
+      }));
+      app.querySelectorAll('[data-cerrar-panel]').forEach(b => b.addEventListener('click', () => { panelAbierto = null; paint(); }));
       const songActiva = app.querySelector('.pp-song.proy-active');
       if(songActiva && songActiva.scrollIntoView) songActiva.scrollIntoView({ block:'nearest' });
       app.querySelector('#btn-open-audiencia').addEventListener('click', () => openWindow('audiencia'));
