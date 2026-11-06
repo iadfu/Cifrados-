@@ -741,6 +741,41 @@
   #cifrados-app:not(.proy-kiosk) .inicio-title,
   #cifrados-app:not(.proy-kiosk) .tab-bar::before{ font-weight:700; letter-spacing:-0.02em; }
 
+  /* ---- Tabla de cifrados por columnas ---- */
+  .song-row .cell{ display:none; }
+  .status{ display:inline-block; font-size:11.5px; font-weight:600; padding:3px 10px; border-radius:999px; white-space:nowrap; }
+  .status-espera{ color:var(--danger); background:var(--danger-soft); }
+  .status-neutro{ color:var(--ink-soft); border:1px solid var(--border); padding:2px 9px; }
+  .status-listo{ color:var(--success); border:1px solid currentColor; padding:2px 9px; }
+  .ref-btn{ display:inline-flex; align-items:center; gap:6px; min-height:34px; padding:0 12px; border:1px solid var(--border); border-radius:8px; background:var(--bg-elevated); color:var(--accent-ink); font-size:12.5px; font-weight:600; text-decoration:none; transition:background 0.15s ease, border-color 0.15s ease; }
+  .ref-btn:hover{ background:var(--accent-soft); border-color:var(--accent); }
+  .ref-btn:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+  .icon-btn svg, .action-pill svg, .ref-btn svg{ stroke-width:1.75; }
+  .wsp-hero-img{ animation:none; }
+  .wsp-hero{ border:1px solid var(--border); box-shadow:none; }
+  @media (min-width:900px){
+    :root{ --col-link:132px; }
+    #cifrados-app .song-list.is-cifrados{ --cols-main:minmax(0,2.2fr) minmax(0,1.6fr) 64px 76px 72px 108px; }
+    #cifrados-app .song-list.is-cultos{ --cols-main:minmax(0,2fr) minmax(0,1.8fr) 96px 96px 124px; }
+    .m-only{ display:none !important; }
+    #cifrados-app .song-list.is-tabla .list-head{ display:grid; grid-template-columns:minmax(0,1fr) var(--col-link); gap:0; padding:0; }
+    #cifrados-app .song-list.is-tabla .hcols{ display:grid; grid-template-columns:var(--cols-main); gap:16px; padding:12px 20px; }
+    #cifrados-app .song-list.is-tabla .hcols span:nth-child(n+3), #cifrados-app .song-list.is-tabla .list-head > span{ text-align:center; }
+    #cifrados-app .song-list.is-tabla .list-head > span{ padding:12px; }
+    #cifrados-app .song-list.is-tabla .song-row{ display:grid; grid-template-columns:minmax(0,1fr) var(--col-link); align-items:center; border-bottom:1px solid var(--border); transition:background 0.12s ease; }
+    #cifrados-app .song-list.is-tabla .song-row:last-child{ border-bottom:none; }
+    #cifrados-app .song-list.is-tabla .song-row:hover{ background:var(--accent-soft); }
+    #cifrados-app .song-list.is-tabla .song-card{ display:grid; grid-template-columns:var(--cols-main); gap:16px; align-items:center; border:none; border-bottom:none; background:transparent; padding:13px 20px; }
+    #cifrados-app .song-list.is-tabla .song-card:hover{ background:transparent; }
+    #cifrados-app .song-list.is-tabla .song-card-info{ display:block; min-width:0; }
+    #cifrados-app .song-list.is-tabla .song-card-artist, #cifrados-app .song-list.is-tabla .song-card-info .badge-espera{ display:none; }
+    #cifrados-app .song-list.is-tabla .cell{ display:block; font-size:13.5px; color:var(--ink-soft); min-width:0; }
+    #cifrados-app .song-list.is-tabla .cell-artista, #cifrados-app .song-list.is-tabla .cell-fecha{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    #cifrados-app .song-list.is-tabla .cell-num, #cifrados-app .song-list.is-tabla .cell-estado, #cifrados-app .song-list.is-tabla .cell-link{ text-align:center; }
+    #cifrados-app .song-list.is-tabla .cell-num{ font-variant-numeric:tabular-nums; }
+    #cifrados-app .song-list.is-tabla .cell-link{ padding:0 12px; }
+  }
+
   @media print{
     *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; color-adjust:exact; }
     body, #cifrados-app{ background:#fff !important; }
@@ -1222,7 +1257,8 @@
     live: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>',
     mail: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>',
     proyector: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>',
-    crown: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="vertical-align:-2px"><path d="M3 8l4 3 5-6 5 6 4-3-2 11H5L3 8Z"/></svg>',
+    crown: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M3 8l4 3 5-6 5 6 4-3-2 11H5L3 8Z"/></svg>',
+    external: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M10 14L21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>',
     eye: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>'
   };
 
@@ -1240,6 +1276,32 @@
     const ampm = h >= 12 ? 'PM' : 'AM';
     h = h % 12; if(h === 0) h = 12;
     return h + ':' + String(min).padStart(2,'0') + ' ' + ampm;
+  }
+
+  function estadoCulto(c){
+    if(!c.songIds || c.songIds.length === 0) return { txt:'Sin canciones', cls:'status-neutro' };
+    if(!c.fecha) return { txt:'Sin fecha', cls:'status-neutro' };
+    const d = new Date();
+    const hoy = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    return c.fecha < hoy ? { txt:'Realizado', cls:'status-neutro' } : { txt:'Próximo', cls:'status-listo' };
+  }
+  function filaCulto(c, accion, disabled){
+    const e = estadoCulto(c);
+    return `
+              <li class="song-row">
+                <button class="song-card" data-open-culto="${c.id}" ${disabled ? 'disabled' : ''}>
+                  <div class="song-card-info">
+                    <p class="song-card-title">${escapeHtml(c.nombre || 'Culto')}</p>
+                    <p class="song-card-artist">${escapeHtml(formatFecha(c.fecha))}${c.hora ? ' · ' + escapeHtml(formatHora(c.hora)) : ''}${c.songIds.length === 0 ? ' · sin canciones' : ''}</p>
+                  </div>
+                  <span class="cell cell-fecha">${escapeHtml(formatFecha(c.fecha)) || '—'}</span>
+                  <span class="cell cell-num">${c.hora ? escapeHtml(formatHora(c.hora)) : '—'}</span>
+                  <span class="cell cell-num">${c.songIds.length}</span>
+                  <span class="cell cell-estado"><span class="status ${e.cls}">${e.txt}</span></span>
+                  <span class="tono-badge m-only">${c.songIds.length}</span>
+                </button>
+                <span class="cell cell-link"><button type="button" class="ref-btn" data-open-culto="${c.id}" ${disabled ? 'disabled' : ''}>${accion}</button></span>
+              </li>`;
   }
 
   function normalizeUrl(url){
@@ -1557,19 +1619,28 @@
             <p>${songs.length === 0 ? 'Aún no tienes cifrados guardados.' : 'Sin resultados para tu búsqueda.'}</p>
           </div>
         ` : `
-          <ul class="song-list is-cifrados">
-            <li class="list-head" aria-hidden="true"><span>Cifrado</span><span>Artista · Detalle</span><span>Tono</span></li>
-            ${filtered.map(s => `
-              <li>
-                <button class="song-card" data-open="${s.id}" ${!isLider() && s.enEspera ? 'disabled' : ''}>
+          <ul class="song-list is-tabla is-cifrados">
+            <li class="list-head" aria-hidden="true"><div class="hcols"><span>Cifrado</span><span>Artista</span><span>BPM</span><span>Compás</span><span>Tono</span><span>Estado</span></div><span>Enlace</span></li>
+            ${filtered.map(s => {
+              const bloqueado = !isLider() && s.enEspera;
+              const url = s.link ? normalizeUrl(s.link) : '';
+              const plat = /^https?:\/\//i.test(url) ? detectPlatform(url) : '';
+              return `
+              <li class="song-row">
+                <button class="song-card" data-open="${s.id}" ${bloqueado ? 'disabled' : ''}>
                   <div class="song-card-info">
                     <p class="song-card-title">${escapeHtml(s.titulo)}${s.enEspera ? ' <span class="badge-espera">En espera</span>' : ''}</p>
                     <p class="song-card-artist">${escapeHtml(s.artista || 'Sin artista')}${s.tempo ? ' · ' + escapeHtml(s.tempo) + ' BPM' : ''}${s.compas ? ' · ' + escapeHtml(s.compas) : ''}</p>
                   </div>
+                  <span class="cell cell-artista">${escapeHtml(s.artista || '—')}</span>
+                  <span class="cell cell-num">${s.tempo ? escapeHtml(s.tempo) : '—'}</span>
+                  <span class="cell cell-num">${s.compas ? escapeHtml(s.compas) : '—'}</span>
                   <span class="tono-badge">${escapeHtml(transposeChordToken(s.tono || '-', s.transpose||0))}</span>
+                  <span class="cell cell-estado">${s.enEspera ? '<span class="status status-espera">En espera</span>' : '<span class="status status-listo">Listo</span>'}</span>
                 </button>
-              </li>
-            `).join('')}
+                <span class="cell cell-link">${plat && !bloqueado ? `<a class="ref-btn" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" aria-label="Abrir enlace de ${escapeHtml(s.titulo)}">${ICONS.external}<span>${escapeHtml(plat === 'link externo' ? 'Enlace' : plat)}</span></a>` : ''}</span>
+              </li>`;
+            }).join('')}
           </ul>
         `}
       </main>
@@ -2015,19 +2086,9 @@
             <p>Aún no hay repertorios armados.</p>
           </div>
         ` : `
-          <ul class="song-list">
-            <li class="list-head" aria-hidden="true"><span>Repertorio</span><span>Fecha</span><span>Canciones</span></li>
-            ${sorted.map(c => `
-              <li>
-                <button class="song-card" data-open-culto="${c.id}">
-                  <div class="song-card-info">
-                    <p class="song-card-title">${escapeHtml(c.nombre || 'Culto')}</p>
-                    <p class="song-card-artist">${escapeHtml(formatFecha(c.fecha))}${c.hora ? ' · ' + escapeHtml(formatHora(c.hora)) : ''}</p>
-                  </div>
-                  <span class="tono-badge">${c.songIds.length}</span>
-                </button>
-              </li>
-            `).join('')}
+          <ul class="song-list is-tabla is-cultos">
+            <li class="list-head" aria-hidden="true"><div class="hcols"><span>Repertorio</span><span>Fecha</span><span>Hora</span><span>Canciones</span><span>Estado</span></div><span>Acción</span></li>
+            ${sorted.map(c => filaCulto(c, 'Ver', false)).join('')}
           </ul>
         `}
       </main>
@@ -2212,19 +2273,9 @@
             <p>Aún no hay repertorios para proyectar. Créalos primero en Repertorio.</p>
           </div>
         ` : `
-          <ul class="song-list">
-            <li class="list-head" aria-hidden="true"><span>Repertorio</span><span>Fecha</span><span>Canciones</span></li>
-            ${sorted.map(c => `
-              <li>
-                <button class="song-card" data-open-culto="${c.id}" ${c.songIds.length === 0 ? 'disabled' : ''}>
-                  <div class="song-card-info">
-                    <p class="song-card-title">${escapeHtml(c.nombre || 'Culto')}</p>
-                    <p class="song-card-artist">${escapeHtml(formatFecha(c.fecha))}${c.hora ? ' · ' + escapeHtml(formatHora(c.hora)) : ''}${c.songIds.length === 0 ? ' · sin canciones' : ''}</p>
-                  </div>
-                  <span class="tono-badge">${c.songIds.length}</span>
-                </button>
-              </li>
-            `).join('')}
+          <ul class="song-list is-tabla is-cultos">
+            <li class="list-head" aria-hidden="true"><div class="hcols"><span>Repertorio</span><span>Fecha</span><span>Hora</span><span>Canciones</span><span>Estado</span></div><span>Acción</span></li>
+            ${sorted.map(c => filaCulto(c, 'Proyectar', c.songIds.length === 0)).join('')}
           </ul>
         `}
       </main>
