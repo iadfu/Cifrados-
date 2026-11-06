@@ -1,3 +1,8 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <style>
   :root{
     --bg:#F3F5F9; --bg-elevated:#FFFFFF; --ink:#0F1B3A; --ink-soft:#4B5A78;
@@ -6,7 +11,7 @@
     --border:rgba(15,27,58,0.12); --shadow:rgba(15,27,58,0.16);
     --card-shadow:0 1px 2px rgba(15,27,58,0.05); --card-shadow-hover:0 4px 14px rgba(15,27,58,0.10);
     --radius:12px;
-    --font-display: ui-serif, 'New York', 'Iowan Old Style', Georgia, serif;
+    --font-display: ui-rounded, 'SF Pro Rounded', var(--font-body);
     --font-body: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', 'Roboto Mono', Menlo, Consolas, monospace;
   }
@@ -35,7 +40,7 @@
   }
   *{box-sizing:border-box;}
   @media (prefers-reduced-motion: reduce){ *{ transition:none !important; animation:none !important; } }
-  body{ margin:0; }
+  body{ margin:0; background:var(--bg); }
   #cifrados-app{
     min-height:100vh;
     background:var(--bg);
@@ -110,10 +115,10 @@
   .empty-state svg{ opacity:0.5; }
   .song-list{ display:flex; flex-direction:column; gap:12px; list-style:none; padding:0; margin:0; }
   @media (min-width:700px){
-    .song-list:not(.is-cifrados){ display:grid; grid-template-columns:repeat(2, 1fr); align-items:start; gap:14px; }
+    .song-list:not(.is-cifrados){ display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); align-items:start; gap:12px; }
   }
   @media (min-width:1000px){
-    .song-list:not(.is-cifrados){ grid-template-columns:repeat(3, 1fr); }
+    .song-list:not(.is-cifrados){ grid-template-columns:repeat(2, minmax(0,1fr)); }
   }
   .song-card{
     background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius);
@@ -601,6 +606,7 @@
   .topbar:has(.search-wrap) .tab-bar{ margin-bottom:12px; }
   main{ padding:18px 18px 100px; }
   .song-list{ gap:10px; }
+  .song-list > li{ min-width:0; }
   .song-card{ border-radius:var(--radius); padding:14px 16px; box-shadow:none; }
   .song-card:hover{ border-color:var(--accent); box-shadow:var(--card-shadow-hover); transform:none; }
   .song-card:active{ transform:scale(0.995); }
@@ -662,6 +668,78 @@
   .sec-edit-move .icon-btn{ width:40px; height:40px; }
   p, h1, h2, h3, .mv-list li{ text-wrap:pretty; }
   h1, h2, h3{ text-wrap:balance; }
+
+  /* ---- Escritorio: barra lateral y tablas ---- */
+  .list-head{ display:none; }
+  @media (min-width:900px){
+    :root{ --side-w:248px; --side-bg:#0F1B3A; --side-ink:#C5D0EA; }
+    #cifrados-app:has(.tab-bar){ max-width:none; margin:0 0 0 var(--side-w); }
+    .topbar{ border-top:none; padding:16px 32px; min-height:68px; justify-content:center; }
+    .app-title{ font-size:20px; }
+    .search-wrap{ max-width:420px; margin:0; }
+    .tab-bar{ position:fixed; left:0; top:0; bottom:0; width:var(--side-w); margin:0; padding:136px 14px 16px; flex-direction:column; gap:4px; background:var(--side-bg); z-index:20; border:none; }
+    .tab-bar::before{ content:'Cifra Viva'; position:absolute; top:24px; left:0; right:0; padding-top:68px; text-align:center; color:#fff; font-family:var(--font-display); font-weight:700; font-size:18px; letter-spacing:-0.01em; background:var(--logo-url) center top/52px 52px no-repeat; }
+    .tab-btn{ display:flex; align-items:center; justify-content:flex-start; gap:12px; flex:none; width:100%; padding:0 14px; min-height:46px; border-radius:10px; border:none; color:var(--side-ink); font-size:14.5px; font-weight:600; text-align:left; }
+    .tab-btn::before{ content:''; width:20px; height:20px; flex:none; background:currentColor; -webkit-mask:var(--ico) center/contain no-repeat; mask:var(--ico) center/contain no-repeat; }
+    .tab-btn:hover{ background:rgba(255,255,255,0.08); color:#fff; }
+    .tab-btn.active{ background:rgba(255,255,255,0.14); color:#fff; border:none; }
+    #tab-inicio{ --ico:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z'/%3E%3C/svg%3E"); }
+    #tab-cifrados{ --ico:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 18V5l12-2v13'/%3E%3Ccircle cx='6' cy='18' r='3'/%3E%3Ccircle cx='18' cy='16' r='3'/%3E%3C/svg%3E"); }
+    #tab-repertorio{ --ico:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2'/%3E%3Cpath d='M16 2v4M8 2v4M3 10h18'/%3E%3C/svg%3E"); }
+    #tab-proyeccion{ --ico:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2' y='4' width='20' height='13' rx='2'/%3E%3Cpath d='M8 21h8M12 17v4'/%3E%3C/svg%3E"); }
+    main{ padding:24px 32px 100px; }
+    .fab{ left:auto; right:32px; transform:none; bottom:28px; }
+    .fab-inner{ padding:0; }
+    .song-list:has(> li > .song-card > .song-card-info:first-child){ display:block; border:1px solid var(--border); border-radius:12px; background:var(--bg-elevated); overflow:hidden; }
+    .list-head{ display:grid; grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) 84px; gap:16px; padding:12px 20px; background:var(--bg); border-bottom:1px solid var(--border); font-size:11px; font-weight:700; letter-spacing:0.09em; text-transform:uppercase; color:var(--ink-soft); }
+    .list-head span:last-child{ text-align:center; }
+    .song-list:has(> li > .song-card > .song-card-info:first-child) .song-card{ display:grid; grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) 84px; gap:16px; align-items:center; border:none; border-bottom:1px solid var(--border); border-radius:0; box-shadow:none; background:transparent; padding:13px 20px; }
+    .song-list:has(> li > .song-card > .song-card-info:first-child) li:last-child .song-card{ border-bottom:none; }
+    .song-list:has(> li > .song-card > .song-card-info:first-child) .song-card:hover{ background:var(--accent-soft); }
+    .song-list:has(> li > .song-card > .song-card-info:first-child) .song-card:disabled:hover{ background:transparent; }
+    .song-list:has(> li > .song-card > .song-card-info:first-child) .song-card-info{ display:contents; }
+    .song-list:has(> li > .song-card > .song-card-info:first-child) .song-card-title{ font-family:var(--font-body); font-size:15px; font-weight:600; margin:0; }
+    .song-list:has(> li > .song-card > .song-card-info:first-child) .song-card-artist{ font-size:13.5px; }
+    .song-list:has(> li > .song-card > .song-card-info:first-child) .tono-badge{ justify-self:center; }
+  }
+
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --side-bg:#070C1B; } }
+  :root[data-theme="dark"]{ --side-bg:#070C1B; }
+
+  /* ---- Login ---- */
+  .pass-wrap{ position:relative; display:flex; }
+  .pass-wrap input{ flex:1; padding-right:84px; }
+  .pass-toggle{ position:absolute; right:6px; top:50%; transform:translateY(-50%); min-height:36px; padding:0 12px; border:none; background:transparent; color:var(--ink-soft); font-size:13px; font-weight:600; border-radius:8px; }
+  .pass-toggle:hover{ color:var(--accent-ink); background:var(--accent-soft); }
+  .auth-body .field input{ min-height:48px; }
+  .auth-body .btn-primary{ min-height:48px; width:100%; font-size:15px; }
+  @media (min-width:900px){
+    #cifrados-app:has(.auth-view){ max-width:none; margin:0; }
+    .auth-view{ display:grid; grid-template-columns:1fr 1fr; min-height:100vh; background:var(--bg-elevated); }
+    .auth-header{ position:relative; display:flex; flex-direction:column; justify-content:center; align-items:flex-start; text-align:left; padding:0 clamp(48px,6vw,96px); background:var(--side-bg); border:none; color:#fff; }
+    .auth-logo{ position:absolute; top:48px; left:clamp(48px,6vw,96px); width:64px; height:64px; margin:0; }
+    .auth-header-title{ font-size:clamp(36px,3.6vw,52px); line-height:1.1; letter-spacing:-0.02em; color:#fff; margin:0 0 14px; }
+    .auth-header-sub{ font-size:18px; line-height:1.5; color:#C5D0EA; max-width:34ch; }
+    .auth-header::after{ content:'Ministerio de alabanza'; position:absolute; left:clamp(48px,6vw,96px); bottom:40px; font-size:13px; color:#8FA0C8; letter-spacing:0.02em; }
+    .auth-body{ display:flex; flex-direction:column; justify-content:center; padding:48px clamp(48px,9vw,140px); }
+    .auth-form{ max-width:420px; gap:16px; }
+    .auth-heading{ font-size:28px; }
+    .auth-instruction{ font-size:15px; margin-bottom:24px; max-width:420px; }
+    .auth-hint{ max-width:420px; }
+    .auth-loading-text{ align-self:center; }
+  }
+
+  /* ---- Tipografia de la interfaz (cifrados y proyecciones conservan la suya) ---- */
+  #cifrados-app:not(.proy-kiosk){
+    --font-body:'Inter', ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-display:var(--font-body);
+  }
+  #cifrados-app:not(.proy-kiosk) .app-title,
+  #cifrados-app:not(.proy-kiosk) .detail-titles h1,
+  #cifrados-app:not(.proy-kiosk) .auth-header-title,
+  #cifrados-app:not(.proy-kiosk) .auth-heading,
+  #cifrados-app:not(.proy-kiosk) .inicio-title,
+  #cifrados-app:not(.proy-kiosk) .tab-bar::before{ font-weight:700; letter-spacing:-0.02em; }
 
   @media print{
     *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; color-adjust:exact; }
@@ -769,6 +847,7 @@
       const head = document.head;
       const meta = (name, content) => { const m = document.createElement('meta'); m.name = name; m.content = content; head.appendChild(m); };
       const link = (rel, href, sizes) => { const l = document.createElement('link'); l.rel = rel; l.href = href; if(sizes) l.sizes = sizes; head.appendChild(l); };
+      document.documentElement.style.setProperty('--logo-url', 'url("' + LOGO_DATA_URI + '")');
       link('icon', LOGO_DATA_URI);
       link('apple-touch-icon', LOGO_DATA_URI);
       meta('apple-mobile-web-app-capable', 'yes');
@@ -1321,6 +1400,21 @@
         </div>
       </div>
     `;
+    app.querySelectorAll('#login-form input[type=password]').forEach(inp => {
+      const wrap = document.createElement('div');
+      wrap.className = 'pass-wrap';
+      inp.parentNode.insertBefore(wrap, inp);
+      wrap.appendChild(inp);
+      const tg = document.createElement('button');
+      tg.type = 'button'; tg.className = 'pass-toggle'; tg.textContent = 'Mostrar';
+      tg.setAttribute('aria-label', 'Mostrar u ocultar contraseña');
+      tg.addEventListener('click', () => {
+        const show = inp.type === 'password';
+        inp.type = show ? 'text' : 'password';
+        tg.textContent = show ? 'Ocultar' : 'Mostrar';
+      });
+      wrap.appendChild(tg);
+    });
     const form = app.querySelector('#login-form');
     const errorEl = app.querySelector('#login-error');
     app.querySelector('#btn-toggle-auth').addEventListener('click', () => {
@@ -1464,6 +1558,7 @@
           </div>
         ` : `
           <ul class="song-list is-cifrados">
+            <li class="list-head" aria-hidden="true"><span>Cifrado</span><span>Artista · Detalle</span><span>Tono</span></li>
             ${filtered.map(s => `
               <li>
                 <button class="song-card" data-open="${s.id}" ${!isLider() && s.enEspera ? 'disabled' : ''}>
@@ -1921,6 +2016,7 @@
           </div>
         ` : `
           <ul class="song-list">
+            <li class="list-head" aria-hidden="true"><span>Repertorio</span><span>Fecha</span><span>Canciones</span></li>
             ${sorted.map(c => `
               <li>
                 <button class="song-card" data-open-culto="${c.id}">
@@ -2117,6 +2213,7 @@
           </div>
         ` : `
           <ul class="song-list">
+            <li class="list-head" aria-hidden="true"><span>Repertorio</span><span>Fecha</span><span>Canciones</span></li>
             ${sorted.map(c => `
               <li>
                 <button class="song-card" data-open-culto="${c.id}" ${c.songIds.length === 0 ? 'disabled' : ''}>
