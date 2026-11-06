@@ -786,6 +786,59 @@
   .swatch-add:hover{ border-color:var(--accent); background:var(--accent-soft); }
   .swatch-add:focus-within{ outline:2px solid var(--accent); outline-offset:2px; }
 
+  /* ---- Panel de proyeccion ---- */
+  #cifrados-app:has(.proy-panel){ max-width:none; margin:0; }
+  .detail-header:has(+ .proy-panel){ flex-direction:row; align-items:center; gap:10px; padding:10px 20px; }
+  .detail-header:has(+ .proy-panel) .detail-titles h1{ font-size:20px; margin:0; }
+  .proy-panel{ padding:16px 18px 24px; display:flex; flex-direction:column; gap:14px; }
+  .pp-left, .pp-right{ display:flex; flex-direction:column; gap:12px; min-width:0; }
+  .pp-right{ order:-1; }
+  .pp-card{ background:var(--bg-elevated); border:1px solid var(--border); border-radius:12px; padding:14px 16px; }
+  .pp-title{ display:flex; justify-content:space-between; align-items:center; gap:8px; margin:0 0 10px; font-size:11.5px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-soft); }
+  .pp-songlist{ display:flex; flex-direction:column; gap:2px; }
+  .pp-song{ display:grid; grid-template-columns:28px minmax(0,1fr) auto; gap:10px; align-items:center; width:100%; min-height:40px; padding:8px 10px; border:none; border-radius:8px; background:transparent; color:var(--ink); font-size:14px; font-weight:600; text-align:left; }
+  .pp-song:hover{ background:var(--accent-soft); }
+  .pp-song.proy-active{ background:var(--accent-soft); color:var(--accent-ink); outline:none; }
+  .pp-num{ text-align:center; color:var(--ink-soft); font-variant-numeric:tabular-nums; font-size:13px; }
+  .pp-name{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .pp-tono{ font-family:var(--font-mono); font-size:12px; font-weight:700; color:var(--accent-ink); background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:2px 7px; }
+  .pp-pills{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+  .pp-nav{ display:flex; gap:10px; }
+  .pp-nav .btn{ flex:1; }
+  .pp-textarea{ min-height:150px; width:100%; margin-bottom:10px; }
+  .pp-toolbar{ display:flex; gap:8px; flex-wrap:wrap; }
+  .pp-toolbar .btn{ flex:1 1 auto; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .pp-previews{ display:flex; flex-direction:column; gap:14px; }
+  .pp-prev-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+  .pp-prev-box .proy-preview{ position:relative; width:100%; padding:0; display:block; container-type:size; border-radius:10px; }
+  .proy-preview .proy-kiosk-inner{ position:absolute; inset:0; min-height:0; max-width:none; width:auto; padding:5cqh 5cqw; overflow:hidden; }
+  .proy-preview .proy-song-title{ font-size:3.4cqh; margin:0 0 4cqh; }
+  .proy-preview .proy-body{ font-size:calc(7cqh * var(--proy-scale, 1)); overflow:hidden; }
+  .proy-preview .proy-meta-badge{ top:2.5cqh; right:2.5cqw; font-size:3cqh; gap:2cqw; }
+  .proy-preview .proy-empty{ font-size:4cqh; }
+  .pp-fondos > summary{ cursor:pointer; font-size:12.5px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:var(--ink-soft); min-height:28px; display:flex; align-items:center; }
+  .pp-fondos[open] > summary{ margin-bottom:12px; }
+  .pp-fondos-body{ display:flex; flex-direction:column; gap:16px; }
+  @media (min-width:1100px){
+    #cifrados-app:has(.proy-panel){ height:100vh; overflow:hidden; }
+    .proy-panel{ display:grid; grid-template-columns:minmax(340px,5fr) 7fr; gap:16px; flex:1; min-height:0; overflow:hidden; padding:16px 20px 20px; }
+    .pp-left, .pp-right{ min-height:0; }
+    .pp-right{ order:0; }
+    .pp-canciones{ flex:0 1 38%; min-height:150px; display:flex; flex-direction:column; }
+    .pp-songlist{ overflow:auto; flex:1; min-height:0; }
+    .pp-secciones{ flex:none; }
+    .pp-edicion{ flex:1; min-height:140px; display:flex; flex-direction:column; }
+    .pp-textarea{ flex:1; min-height:0; }
+    .pp-previews{ flex:1; min-height:0; display:grid; grid-template-rows:1fr 1fr; gap:12px; }
+    .pp-prev{ display:flex; flex-direction:column; min-height:0; }
+    .pp-prev-box{ flex:1; min-height:0; display:flex; align-items:center; justify-content:center; container-type:size; }
+    .pp-prev-box .proy-preview{ width:min(100cqw, calc(100cqh * 16 / 9)); }
+    .proy-panel:has(.pp-fondos[open]) .pp-previews{ flex:none; grid-template-columns:1fr 1fr; grid-template-rows:none; }
+    .proy-panel:has(.pp-fondos[open]) .pp-prev-box{ flex:none; display:block; container-type:inline-size; }
+    .proy-panel:has(.pp-fondos[open]) .pp-prev-box .proy-preview{ width:100%; }
+    .proy-panel:has(.pp-fondos[open]) .pp-fondos{ flex:1; min-height:0; overflow:auto; }
+  }
+
   @media print{
     *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; color-adjust:exact; }
     body, #cifrados-app{ background:#fff !important; }
@@ -2446,6 +2499,7 @@
       channel.postMessage(proy);
       paint();
     }
+    let fondosAbierto = false;
     let screensList = null;
     let selectedScreen = { audiencia: null, musicos: null };
     async function chooseScreens(){
@@ -2481,6 +2535,48 @@
     function paint(){
       const song = currentSong();
       const secs = currentSecciones();
+      const previewHtml = m => {
+        const c = computeKioskContent(culto, list, proy, m);
+        const mScale = loadProyManualScale(culto.id, m, c.song, c.sec);
+        const fa = fondoAttrs(c.fondo, proy.fondoOscuro);
+        let inner;
+        if(c.blackout) inner = '<div class="proy-preview-blackout"></div>';
+        else if(c.empty) inner = '<span class="proy-preview-empty">Sin canciones</span>';
+        else inner = `
+          ${m === 'musicos' ? `<div class="proy-meta-badge"><span>Tono <b>${escapeHtml(c.tonoDisplay)}</b></span>${c.compas ? `<span>Compás <b>${escapeHtml(c.compas)}</b></span>` : ''}${c.tempo ? `<span><b>${escapeHtml(c.tempo)}</b> BPM</span>` : ''}</div>` : ''}
+          <div class="proy-kiosk-inner">
+            <div class="proy-song-title">${escapeHtml(c.song.titulo)}</div>
+            <pre class="proy-body" style="--proy-scale:${c.fontScale * mScale};">${c.bodyHtml || '<span class="proy-empty">— sin contenido —</span>'}</pre>
+          </div>`;
+        return `
+          <div class="pp-prev">
+            <div class="pp-prev-head">
+              <p class="proy-preview-label" style="margin:0;">${m === 'audiencia' ? 'Salida Audiencia' : 'Salida Músicos'}</p>
+              <div style="display:flex; gap:4px;">
+                <button type="button" class="icon-btn proy-preview-size-btn" data-scale-down="${m}" aria-label="Letra más chica" style="width:32px;height:32px;font-size:12px;font-weight:700;border:1px solid var(--border);">A−</button>
+                <button type="button" class="icon-btn proy-preview-size-btn" data-scale-up="${m}" aria-label="Letra más grande" style="width:32px;height:32px;font-size:12px;font-weight:700;border:1px solid var(--border);">A+</button>
+              </div>
+            </div>
+            <div class="pp-prev-box">
+              <div class="proy-preview proy-${m} mode-${m} ${fa.cls}" style="${fa.img ? 'background-image:' + fa.img + ';' : ''}">${inner}</div>
+            </div>
+          </div>`;
+      };
+      const curSec = secs[proy.sectionIndex];
+      let edicionHtml = '';
+      if(curSec){
+        const override = getLetraOverride(culto, song, curSec);
+        const letraTexto = override !== null ? override : extractLyricsOnly(curSec.contenido);
+        edicionHtml = `
+          <div class="pp-card pp-edicion">
+            <p class="pp-title"><span>Letra para audiencia · ${escapeHtml(sectionLabel(curSec))}</span>${override !== null ? '<span class="status status-listo">Editada</span>' : ''}</p>
+            <textarea id="letra-audiencia-edit" class="sec-contenido pp-textarea">${escapeHtml(letraTexto)}</textarea>
+            <div class="pp-nav">
+              <button type="button" class="btn btn-primary" id="btn-letra-guardar">Guardar letra</button>
+              ${override !== null ? '<button type="button" class="btn" id="btn-letra-restaurar">Restaurar original</button>' : ''}
+            </div>
+          </div>`;
+      }
       app.innerHTML = `
         <div class="detail-header">
           <button class="icon-btn" id="btn-back" aria-label="Volver">${ICONS.back}</button>
@@ -2489,118 +2585,87 @@
             <p>${escapeHtml(culto.nombre || 'Culto')}</p>
           </div>
         </div>
-        <main style="padding:16px 18px 40px; display:flex; flex-direction:column; gap:18px;">
-          <div>
-            <p style="font-weight:700; margin:0 0 10px; font-size:16px;">Vista previa en vivo</p>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-              ${['audiencia','musicos'].map(m => {
-                const c = computeKioskContent(culto, list, proy, m);
-                const mScale = loadProyManualScale(culto.id, m, c.song, c.sec);
-                const fa = fondoAttrs(c.fondo, proy.fondoOscuro);
-                let inner;
-                if(c.blackout) inner = '<div class="proy-preview-blackout"></div>';
-                else if(c.empty) inner = '<span class="proy-preview-empty">Sin canciones</span>';
-                else inner = `<div class="proy-preview-title">${escapeHtml(c.song.titulo)}</div><div class="proy-preview-body" style="--proy-preview-scale:${mScale};">${c.bodyHtml || ''}</div>`;
-                return `
-                  <div>
-                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
-                      <p class="proy-preview-label" style="margin:0;">${m === 'audiencia' ? 'Audiencia' : 'Músicos'}</p>
-                      <div style="display:flex; gap:4px;">
-                        <button type="button" class="icon-btn proy-preview-size-btn" data-scale-down="${m}" aria-label="Letra más chica" style="width:24px;height:24px;font-size:10.5px;font-weight:700;border:1px solid var(--border);">A−</button>
-                        <button type="button" class="icon-btn proy-preview-size-btn" data-scale-up="${m}" aria-label="Letra más grande" style="width:24px;height:24px;font-size:10.5px;font-weight:700;border:1px solid var(--border);">A+</button>
-                      </div>
-                    </div>
-                    <div class="proy-preview mode-${m} ${fa.cls}" style="${fa.img ? 'background-image:' + fa.img + ';' : ''}">${inner}</div>
+        <main class="proy-panel">
+          <section class="pp-left">
+            <div class="pp-card pp-canciones">
+              <p class="pp-title"><span>Canciones</span><span>${list.length}</span></p>
+              <div class="pp-songlist">
+                ${list.map((s,i) => `
+                  <button type="button" class="pp-song ${i===proy.songIndex ? 'proy-active' : ''}" data-song="${i}">
+                    <span class="pp-num">${i+1}</span>
+                    <span class="pp-name">${escapeHtml(s.titulo)}</span>
+                    <span class="pp-tono">${escapeHtml(transposeChordToken(s.tono || '-', (culto.transposes && culto.transposes[s.id]) || 0))}</span>
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+            <div class="pp-card pp-secciones">
+              <p class="pp-title"><span>${song ? escapeHtml(song.titulo) : ''}</span></p>
+              <div class="pp-pills">
+                ${secs.map((sec,i) => `
+                  <button type="button" class="sec-pill ${i===proy.sectionIndex ? 'proy-active' : ''}" data-sec="${i}" style="--dot:rgb(${sectionColor(sec.tipo)})">
+                    <span class="dot"></span>${escapeHtml(sectionLabel(sec))}
+                  </button>
+                `).join('')}
+              </div>
+              <div class="pp-nav">
+                <button type="button" class="btn" id="btn-prev">◀ Anterior</button>
+                <button type="button" class="btn" id="btn-next">Siguiente ▶</button>
+              </div>
+            </div>
+            ${edicionHtml}
+          </section>
+          <section class="pp-right">
+            <div class="pp-toolbar">
+              <button type="button" class="btn" id="btn-open-audiencia">${ICONS.proyector} Vista Audiencia</button>
+              <button type="button" class="btn" id="btn-open-musicos">${ICONS.proyector} Vista Músicos</button>
+              <button type="button" class="btn ${proy.blackout ? 'btn-danger' : ''}" id="btn-blackout">${proy.blackout ? 'Quitar pantalla negra' : 'Pantalla en negro'}</button>
+            </div>
+            <div class="pp-previews">
+              ${previewHtml('audiencia')}
+              ${previewHtml('musicos')}
+            </div>
+            <details class="pp-card pp-fondos" ${fondosAbierto ? 'open' : ''}>
+              <summary>Fondos y pantallas de salida</summary>
+              <div class="pp-fondos-body">
+                ${'getScreenDetails' in window ? `
+                  <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                    <button type="button" class="btn" id="btn-choose-screens" style="flex:none;">Elegir pantallas de salida</button>
+                    ${screensList ? ['audiencia','musicos'].map(m => `
+                      <label style="font-size:13px; color:var(--ink-soft); display:flex; align-items:center; gap:6px;">
+                        ${m === 'audiencia' ? 'Audiencia' : 'Músicos'}:
+                        <select data-screen-select="${m}" style="padding:4px 6px; border-radius:6px; border:1px solid var(--border); background:var(--bg); color:var(--ink);">
+                          ${screensList.map((sc,i) => `<option value="${i}" ${selectedScreen[m]===i?'selected':''}>Pantalla ${i+1}${sc.isPrimary?' (principal)':''} — ${sc.width}×${sc.height}</option>`).join('')}
+                        </select>
+                      </label>
+                    `).join('') : '<span style="font-size:12.5px; color:var(--ink-soft);">Detecta tus pantallas conectadas para que cada ventana se abra directo en la correcta.</span>'}
                   </div>
-                `;
-              }).join('')}
-            </div>
-          </div>
-          <div style="display:flex; gap:8px; flex-wrap:wrap;">
-            <button type="button" class="btn" id="btn-open-audiencia">${ICONS.proyector} Vista Audiencia</button>
-            <button type="button" class="btn" id="btn-open-musicos">${ICONS.proyector} Vista Músicos</button>
-            <button type="button" class="btn ${proy.blackout ? 'btn-danger' : ''}" id="btn-blackout">${proy.blackout ? 'Quitar pantalla negra' : 'Pantalla en negro'}</button>
-          </div>
-          ${'getScreenDetails' in window ? `
-            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-              <button type="button" class="btn" id="btn-choose-screens" style="flex:none;">Elegir pantallas de salida</button>
-              ${screensList ? ['audiencia','musicos'].map(m => `
-                <label style="font-size:13px; color:var(--ink-soft); display:flex; align-items:center; gap:6px;">
-                  ${m === 'audiencia' ? 'Audiencia' : 'Músicos'}:
-                  <select data-screen-select="${m}" style="padding:4px 6px; border-radius:6px; border:1px solid var(--border); background:var(--bg); color:var(--ink);">
-                    ${screensList.map((s,i) => `<option value="${i}" ${selectedScreen[m]===i?'selected':''}>Pantalla ${i+1}${s.isPrimary?' (principal)':''} — ${s.width}×${s.height}</option>`).join('')}
-                  </select>
-                </label>
-              `).join('') : '<span style="font-size:12.5px; color:var(--ink-soft);">Detecta tus pantallas conectadas para que cada ventana se abra directo en la correcta.</span>'}
-            </div>
-          ` : ''}
-          <div>
-            <p style="font-weight:700; margin:0 0 10px; font-size:16px;">Fondo — Audiencia</p>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-              ${fondoPickerHtml('audiencia', proy.fondoAudiencia)}
-            </div>
-          </div>
-          <div>
-            <p style="font-weight:700; margin:0 0 10px; font-size:16px;">Fondo — Músicos</p>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-              ${fondoPickerHtml('musicos', proy.fondoMusicos)}
-            </div>
-            ${fondosCustom.size ? `
-              <label style="display:flex; align-items:center; gap:12px; margin-top:14px; font-size:13px; color:var(--ink-soft);">
-                Oscurecer fondos con imagen
-                <input type="range" id="rng-oscuro" min="0" max="80" step="5" value="${proy.fondoOscuro}" style="flex:1; max-width:260px;">
-                <b id="oscuro-val" style="color:var(--ink); min-width:36px;">${proy.fondoOscuro}%</b>
-              </label>
-            ` : ''}
-          </div>
-          <div>
-            <p style="font-weight:700; margin:0 0 10px; font-size:16px;">${song ? escapeHtml(song.titulo) : ''}</p>
-            <div style="display:flex; flex-wrap:wrap; gap:8px;">
-              ${secs.map((sec,i) => `
-                <button type="button" class="sec-pill ${i===proy.sectionIndex ? 'proy-active' : ''}" data-sec="${i}" style="--dot:rgb(${sectionColor(sec.tipo)})">
-                  <span class="dot"></span>${escapeHtml(sectionLabel(sec))}
-                </button>
-              `).join('')}
-            </div>
-          </div>
-          <div style="display:flex; gap:10px;">
-            <button type="button" class="btn" id="btn-prev">◀ Anterior</button>
-            <button type="button" class="btn" id="btn-next">Siguiente ▶</button>
-          </div>
-          ${(() => {
-            const curSec = secs[proy.sectionIndex];
-            if(!curSec) return '';
-            const override = getLetraOverride(culto, song, curSec);
-            const letraTexto = override !== null ? override : extractLyricsOnly(curSec.contenido);
-            return `
-              <div>
-                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-                  <p style="font-weight:700; margin:0; font-size:16px;">Letra para audiencia — ${escapeHtml(sectionLabel(curSec))}</p>
-                  ${override !== null ? '<span class="opt-tag">editada</span>' : ''}
+                ` : ''}
+                <div>
+                  <p class="pp-title"><span>Fondo · Audiencia</span></p>
+                  <div style="display:flex; gap:10px; flex-wrap:wrap;">${fondoPickerHtml('audiencia', proy.fondoAudiencia)}</div>
                 </div>
-                <textarea id="letra-audiencia-edit" class="sec-contenido" style="min-height:110px;">${escapeHtml(letraTexto)}</textarea>
-                <div style="display:flex; gap:8px; margin-top:10px;">
-                  <button type="button" class="btn" id="btn-letra-guardar">Guardar</button>
-                  ${override !== null ? '<button type="button" class="btn" id="btn-letra-restaurar">Restaurar original</button>' : ''}
+                <div>
+                  <p class="pp-title"><span>Fondo · Músicos</span></p>
+                  <div style="display:flex; gap:10px; flex-wrap:wrap;">${fondoPickerHtml('musicos', proy.fondoMusicos)}</div>
+                  ${fondosCustom.size ? `
+                    <label style="display:flex; align-items:center; gap:12px; margin-top:14px; font-size:13px; color:var(--ink-soft);">
+                      Oscurecer fondos con imagen
+                      <input type="range" id="rng-oscuro" min="0" max="80" step="5" value="${proy.fondoOscuro}" style="flex:1; max-width:260px;">
+                      <b id="oscuro-val" style="color:var(--ink); min-width:36px;">${proy.fondoOscuro}%</b>
+                    </label>
+                  ` : ''}
                 </div>
               </div>
-            `;
-          })()}
-          <ul class="song-list">
-            ${list.map((s,i) => `
-              <li>
-                <button type="button" class="song-card ${i===proy.songIndex ? 'proy-active' : ''}" data-song="${i}">
-                  <span class="tono-badge" style="min-width:26px;">${i+1}</span>
-                  <div class="song-card-info">
-                    <p class="song-card-title">${escapeHtml(s.titulo)}</p>
-                  </div>
-                </button>
-              </li>
-            `).join('')}
-          </ul>
+            </details>
+          </section>
         </main>
       `;
       app.querySelector('#btn-back').addEventListener('click', () => go('culto-detail', culto.id));
+      const detFondos = app.querySelector('.pp-fondos');
+      detFondos.addEventListener('toggle', () => { fondosAbierto = detFondos.open; });
+      const songActiva = app.querySelector('.pp-song.proy-active');
+      if(songActiva && songActiva.scrollIntoView) songActiva.scrollIntoView({ block:'nearest' });
       app.querySelector('#btn-open-audiencia').addEventListener('click', () => openWindow('audiencia'));
       app.querySelector('#btn-open-musicos').addEventListener('click', () => openWindow('musicos'));
       app.querySelector('#btn-blackout').addEventListener('click', toggleBlackout);
