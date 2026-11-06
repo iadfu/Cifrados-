@@ -146,23 +146,6 @@
   }
   .song-card:disabled{ opacity:0.55; cursor:not-allowed; }
   .song-card:disabled:hover{ border-color:var(--border); box-shadow:var(--card-shadow); transform:none; }
-  .fab{
-    position:fixed; bottom:26px; left:50%; transform:translateX(calc(-1 * min(280px, 50vw) + 0px));
-    z-index:6;
-  }
-  .fab-inner{
-    max-width:560px; margin:0 auto; padding:0 18px; display:flex; justify-content:flex-end;
-    pointer-events:none;
-  }
-  .fab button{
-    pointer-events:auto;
-    width:58px; height:58px; border-radius:50%; border:none;
-    background:var(--accent); color:var(--on-accent); box-shadow:0 6px 16px rgba(15,27,58,0.28);
-    display:flex; align-items:center; justify-content:center;
-    transition:box-shadow 0.18s ease, transform 0.15s ease;
-  }
-  .fab button:hover{ transform:translateY(-2px); box-shadow:0 10px 22px rgba(15,27,58,0.34); }
-  .fab button:active{ transform:translateY(0) scale(0.94); }
 
   .detail-header{
     display:flex; flex-direction:column; gap:10px; padding:16px 18px 10px; position:sticky; top:0;
@@ -617,7 +600,6 @@
     background:var(--bg); border:1px solid var(--border); color:var(--accent-ink);
   }
   .badge-espera{ border-radius:6px; font-size:10.5px; letter-spacing:0.06em; padding:2px 8px; margin-left:6px; vertical-align:2px; }
-  .fab button{ width:56px; height:56px; border-radius:16px; }
   .detail-header{ background:var(--bg-elevated); border-top:3px solid var(--accent); padding:14px 18px 12px; gap:12px; }
   .detail-titles h1{ font-size:24px; font-weight:700; letter-spacing:-0.02em; line-height:1.15; }
   .detail-titles p{ font-size:13.5px; letter-spacing:0.01em; }
@@ -687,8 +669,6 @@
     #tab-cifrados{ --ico:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 18V5l12-2v13'/%3E%3Ccircle cx='6' cy='18' r='3'/%3E%3Ccircle cx='18' cy='16' r='3'/%3E%3C/svg%3E"); }
     #tab-proyeccion{ --ico:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2' y='4' width='20' height='13' rx='2'/%3E%3Cpath d='M8 21h8M12 17v4'/%3E%3C/svg%3E"); }
     main{ padding:24px 32px 100px; }
-    .fab{ left:auto; right:32px; transform:none; bottom:28px; }
-    .fab-inner{ padding:0; }
     .song-list:has(> li > .song-card > .song-card-info:first-child){ display:block; border:1px solid var(--border); border-radius:12px; background:var(--bg-elevated); overflow:hidden; }
     .list-head{ display:grid; grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) 84px; gap:16px; padding:12px 20px; background:var(--bg); border-bottom:1px solid var(--border); font-size:11px; font-weight:700; letter-spacing:0.09em; text-transform:uppercase; color:var(--ink-soft); }
     .list-head span:last-child{ text-align:center; }
@@ -908,10 +888,15 @@
   .chip-iglesia{ display:inline-block; font-size:12px; font-weight:700; padding:3px 10px; border-radius:999px; background:var(--accent-soft); color:var(--accent-ink); }
   .dash-main{ display:flex; flex-direction:column; gap:16px; min-width:0; }
 
+  .search-row{ display:flex; gap:10px; align-items:center; }
+  .search-row .search-wrap{ flex:1; min-width:0; margin:2px 0 12px; }
+  .btn-nuevo{ flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center; gap:6px; white-space:nowrap; margin:2px 0 12px; }
+  .btn-nuevo svg{ width:16px; height:16px; }
+
   @media print{
     *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; color-adjust:exact; }
     body, #cifrados-app{ background:#fff !important; }
-    .detail-header, .transpose-bar, .topbar, .fab, .toast, .modal-overlay, .pdf-dropdown, .pdf-backdrop, .ref-link-wrap{ display:none !important; }
+    .detail-header, .transpose-bar, .topbar, .toast, .modal-overlay, .pdf-dropdown, .pdf-backdrop, .ref-link-wrap{ display:none !important; }
     #cifrados-app{ max-width:none; color:#000; }
     .print-header{
       display:flex; justify-content:space-between; align-items:flex-end; gap:20px;
@@ -1740,7 +1725,6 @@
           ${isLider() ? `
           <div class="dash-actions">
             <button type="button" class="btn btn-primary" data-go="culto-form">${ICONS.plus} Nuevo repertorio</button>
-            <button type="button" class="btn" data-go="form">${ICONS.plus} Nuevo cifrado</button>
           </div>` : ''}
         </div>
         <div class="kpi-row">
@@ -1753,8 +1737,7 @@
             ${grupos.length ? grupos.map(proxCard).join('') : `
               <section class="dash-card dash-prox">
                 <p class="pp-title"><span>Próximo repertorio</span></p>
-                <p class="dash-vacio">No hay repertorios próximos.</p>
-                ${isLider() ? '<div class="pp-nav" style="margin-top:6px;"><button type="button" class="btn btn-primary" data-go="culto-form">Crear repertorio</button></div>' : ''}
+                <p class="dash-vacio">No hay repertorios próximos.${isLider() ? ' Usa «Nuevo repertorio» para crear uno.' : ''}</p>
               </section>`}
           </div>
           <div class="dash-side">
@@ -1859,9 +1842,12 @@
           ${isLider() ? `<button class="icon-btn" id="btn-share" aria-label="Compartir y respaldar">${ICONS.share}</button>` : ''}
         </div>
         ${tabBarHtml('cifrados')}
-        <div class="search-wrap">
-          ${ICONS.search}
-          <input type="text" id="search-input" placeholder="Buscar por título o artista..." value="${escapeHtml(state.query)}" />
+        <div class="search-row">
+          <div class="search-wrap">
+            ${ICONS.search}
+            <input type="text" id="search-input" placeholder="Buscar por título o artista..." value="${escapeHtml(state.query)}" />
+          </div>
+          ${isLider() ? `<button type="button" class="btn btn-primary btn-nuevo" id="btn-new">${ICONS.plus} Nuevo cifrado</button>` : ''}
         </div>
       </div>
       <main>
@@ -1896,9 +1882,9 @@
           </ul>
         `}
       </main>
-      ${isLider() ? `<div class="fab"><div class="fab-inner"><button id="btn-new" aria-label="Agregar cifrado">${ICONS.plus}</button></div></div>` : ''}
       ${pinModalHtml()}
     `;
+    if(isLider()) app.querySelector('#btn-new').addEventListener('click', () => go('form', null));
     app.querySelector('#search-input').addEventListener('input', e => {
       state.query = e.target.value;
       const cursorPos = e.target.selectionStart;
@@ -1907,7 +1893,6 @@
       input.focus();
       input.setSelectionRange(cursorPos, cursorPos);
     });
-    if(isLider()) app.querySelector('#btn-new').addEventListener('click', () => go('form', null));
     if(isLider()) app.querySelector('#btn-share').addEventListener('click', () => go('share'));
     wireTabs();
     wireRoleBadge(renderList);
